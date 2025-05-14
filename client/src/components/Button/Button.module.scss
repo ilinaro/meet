@@ -1,0 +1,45 @@
+.button {
+  height: 40px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-mini);
+  border: none;
+  background-color: var(--color-violet);
+  color: var(--color-white-general);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-violet-hover);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    background-color: var(--color-gray);
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+.fullWidth {
+  width: 100%;
+}
+.loading {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

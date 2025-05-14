@@ -1,0 +1,37 @@
+.card {
+  max-width: 400px;
+  margin: 150px auto;
+}
+
+.successMessage {
+  text-align: center;
+}
+
+.successText {
+  font-size: 0.875rem;
+  color: var(--color-gray);
+}
+
+.linkWrapper {
+  margin-bottom: 20px;
+}
+
+.link {
+  color: var(--color-violet);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.countPass {
+  margin-top: -20px;
+  font-size: 14px;
+  color: var(--color-violet);
+  height: 30px;
+}
+
+.button {
+  margin-top: 20px;
+}

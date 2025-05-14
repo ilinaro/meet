@@ -1,0 +1,44 @@
+.start {
+  margin-top: 100px;
+  padding: 0 100px;
+}
+.wrapper {
+  display: flex;
+  margin-top: 30px;
+}
+
+.content {
+  margin-right: 30px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  .text {
+    margin-top: 20px;
+  }
+  .about {
+    margin-top: 30px;
+  }
+  .any {
+    margin-top: 120px;
+  }
+  .features {
+    margin-top: 20px;
+  }
+}
+
+.images {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  .first {
+    width: 400px;
+    height: fit-content;
+    border-radius: 30px;
+    overflow: hidden;
+    & > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}

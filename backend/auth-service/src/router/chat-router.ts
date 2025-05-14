@@ -1,0 +1,41 @@
+import express from "express";
+import { body, query } from "express-validator";
+import chatController from "../controllers/chat-controller";
+import contactController from "../controllers/contact-controller";
+import authMiddleware from "../middleware/auth-middleware";
+import { Routers } from "../types/routers";
+
+const router = express.Router();
+
+router.post(
+  Routers.CHAT_START,
+  authMiddleware,
+  body("targetUserId")
+    .notEmpty()
+    .withMessage("Не указан ID целевого пользователя"),
+  chatController.startChat
+);
+router.post(
+  Routers.CHAT_ADD_CONTACT,
+  authMiddleware,
+  body("id").notEmpty().withMessage("Не указан ID целевого пользователя"),
+  contactController.addContact
+);
+router.get(
+  Routers.CHAT_CONTACTS,
+  authMiddleware,
+  contactController.getContacts
+);
+router.delete(
+  Routers.CHAT_REMOVE,
+  authMiddleware,
+  contactController.removeContact
+);
+router.get(
+  Routers.CHAT_MESSAGES,
+  authMiddleware,
+  query("chatId").notEmpty().withMessage("Не указан chatId"),
+  chatController.getMessages
+);
+
+export default router;

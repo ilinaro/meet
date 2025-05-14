@@ -1,0 +1,33 @@
+.wrapper {
+  padding: 30px;
+}
+
+.back {
+  color: var(--color-violet);
+  padding: 10px 20px;
+  border: var(--color-violet) 1px solid;
+  width: fit-content;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s all;
+  &:hover {
+    color: var(--color-white-general);
+    background-color: var(--color-violet);
+  }
+}
+
+.header {
+  margin-top: 20px;
+}
+.headSettings {
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.warnEmail {
+  background-color: var(--color-red-general);
+  width: fit-content;
+  padding: 10px;
+  border-radius: 10px;
+}

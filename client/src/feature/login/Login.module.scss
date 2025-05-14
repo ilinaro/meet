@@ -1,0 +1,27 @@
+.card {
+  max-width: 400px;
+  margin: 150px auto;
+}
+
+.linkWrapper {
+  margin-bottom: 1rem;
+}
+
+.link {
+  color: var(--color-violet);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.error {
+  color: var(--color-red-warn);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.button {
+  margin-top: 20px;
+}
