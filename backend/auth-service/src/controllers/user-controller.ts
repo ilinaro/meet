@@ -9,7 +9,7 @@ class UserController {
   async registration(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> {
     try {
       const errors = validationResult(req);
@@ -17,8 +17,8 @@ class UserController {
         next(
           ApiError.BadRequest(
             ErrorMessages.REGISTRATION_INCORRECT,
-            errors.array()
-          )
+            errors.array(),
+          ),
         );
       }
       const { email, password, nickname } = req.body;
@@ -26,7 +26,7 @@ class UserController {
       const userData = await UserService.registration(
         email,
         password,
-        nickname
+        nickname,
       );
 
       if (!userData) return;

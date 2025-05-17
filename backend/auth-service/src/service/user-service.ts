@@ -51,7 +51,7 @@ class UserService {
 
     await MailService.sendActivationMail(
       email,
-      `${process.env.API_URL}/api/active/${activationLink}`
+      `${process.env.API_URL}/api/active/${activationLink}`,
     );
     const userDto = this.createUserDto(user);
     const tokens = TokenService.generateTokens({ ...userDto });
@@ -153,7 +153,7 @@ class UserService {
 
   async updateUser(
     userId: string,
-    updates: { nickname?: string; allowChatInvites?: boolean }
+    updates: { nickname?: string; allowChatInvites?: boolean },
   ) {
     const user = await UserModel.findById(userId);
     if (!user) {

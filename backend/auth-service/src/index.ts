@@ -19,7 +19,7 @@ app.use(
     origin: process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
+  }),
 );
 app.use("/api", router);
 app.use(errorMiddleware);
@@ -35,7 +35,7 @@ const start = async () => {
   try {
     await mongoose.connect(DB_URL);
     httpServer.listen(PORT, () =>
-      logger.success("Server started on port", PORT)
+      logger.success("Server started on port", PORT),
     );
   } catch (e) {
     mongoose.connection.on("error", (err) => {

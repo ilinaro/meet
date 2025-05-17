@@ -2,7 +2,7 @@ import React from "react";
 import { useAppSelector } from "../../../store/useAppSelect";
 import { useEffect, useState } from "react";
 import { UserProfile } from "./UserProfile";
-import { Chat } from "./Chat";
+import { ChatRoom } from "./ChatRoom";
 import { UserHeader } from "./UserHeader";
 import styles from "../Profile.module.scss";
 import { selectUserContact } from "../../../store/userContactStateSlice";
@@ -24,7 +24,7 @@ export const UserMessage: React.FC = React.memo(() => {
       {userContact && (
         <>
           <UserHeader toggleInfo={toggleInfo} />
-          {openProfile ? <UserProfile /> : <Chat />}
+          {openProfile ? <UserProfile /> : <ChatRoom />}
         </>
       )}
     </div>

@@ -13,29 +13,29 @@ router.post(
   body("targetUserId")
     .notEmpty()
     .withMessage("Не указан ID целевого пользователя"),
-  chatController.startChat
+  chatController.startChat,
 );
 router.post(
   Routers.CHAT_ADD_CONTACT,
   authMiddleware,
   body("id").notEmpty().withMessage("Не указан ID целевого пользователя"),
-  contactController.addContact
+  contactController.addContact,
 );
 router.get(
   Routers.CHAT_CONTACTS,
   authMiddleware,
-  contactController.getContacts
+  contactController.getContacts,
 );
 router.delete(
   Routers.CHAT_REMOVE,
   authMiddleware,
-  contactController.removeContact
+  contactController.removeContact,
 );
 router.get(
   Routers.CHAT_MESSAGES,
   authMiddleware,
   query("chatId").notEmpty().withMessage("Не указан chatId"),
-  chatController.getMessages
+  chatController.getMessages,
 );
 
 export default router;

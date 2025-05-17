@@ -29,7 +29,7 @@ class TokenService {
     try {
       const userData = jwt.verify(
         token,
-        process.env.JWT_ACCESS_SECRET_KEY
+        process.env.JWT_ACCESS_SECRET_KEY,
       ) as DtoService;
       return userData;
     } catch (e) {

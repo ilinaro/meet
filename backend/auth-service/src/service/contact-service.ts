@@ -81,7 +81,7 @@ class ContactService {
           isInContacts: true,
           lastMessages,
         };
-      })
+      }),
     );
 
     return result;
@@ -89,7 +89,7 @@ class ContactService {
 
   async removeContact(
     currentUserId: string,
-    targetUserId: string
+    targetUserId: string,
   ): Promise<void> {
     if (currentUserId === targetUserId) {
       throw ApiError.BadRequest("Нельзя удалить себя из контактов");

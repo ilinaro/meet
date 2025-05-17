@@ -20,14 +20,14 @@ export const initWebSocket = (httpServer: HttpServer) => {
   io.use(async (socket: AuthSocket, next) => {
     try {
       const token = socket.handshake.auth.token;
-    //   logger.info("WebSocket: Получен токен:", token);
+      //   logger.info("WebSocket: Получен токен:", token);
       if (!token) {
         logger.error("WebSocket: Токен не предоставлен");
         return next(new Error("Токен не предоставлен"));
       }
 
       const userData = await tokenService.validateAccessToken(token);
-    //   logger.info("WebSocket: Результат валидации токена:", userData);
+      //   logger.info("WebSocket: Результат валидации токена:", userData);
       if (!userData) {
         logger.error("WebSocket: Неверный или истёкший токен");
         return next(new Error("Неверный или истёкший токен"));
@@ -44,7 +44,9 @@ export const initWebSocket = (httpServer: HttpServer) => {
   io.on("connection", (socket: AuthSocket) => {
     if (!socket.user) return socket.disconnect();
 
-    logger.success(`WebSocket: Пользователь ${socket.user._id} подключился, socket ID: ${socket.id}`);
+    logger.success(
+      `WebSocket: Пользователь ${socket.user._id} подключился, socket ID: ${socket.id}`,
+    );
 
     socket.on("joinChat", ({ targetUserId, chatId }) => {
       if (!targetUserId || !chatId) {
@@ -52,10 +54,14 @@ export const initWebSocket = (httpServer: HttpServer) => {
         return;
       }
 
-      logger.info(`WebSocket: Пользователь ${socket.user!._id} присоединяется к чату ${chatId}`);
+      logger.info(
+        `WebSocket: Пользователь ${socket.user!._id} присоединяется к чату ${chatId}`,
+      );
       socket.join(chatId);
       socket.emit("chatJoined", { chatId });
-      logger.info(`WebSocket: Пользователь ${socket.user!._id} присоединился к чату ${chatId}`);
+      logger.info(
+        `WebSocket: Пользователь ${socket.user!._id} присоединился к чату ${chatId}`,
+      );
     });
 
     socket.on("message", ({ chatId, content }) => {
@@ -64,13 +70,17 @@ export const initWebSocket = (httpServer: HttpServer) => {
         return;
       }
 
-      logger.info(`WebSocket: Получено сообщение для чата ${chatId}: ${content}`);
+      logger.info(
+        `WebSocket: Получено сообщение для чата ${chatId}: ${content}`,
+      );
       io.to(chatId).emit("message", {
         senderId: socket.user!._id,
         content,
         timestamp: new Date().toISOString(),
       });
-      logger.info(`WebSocket: Рассылка сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`);
+      logger.info(
+        `WebSocket: Рассылка сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`,
+      );
     });
 
     socket.on("testMessage", ({ chatId, content }) => {
@@ -79,13 +89,17 @@ export const initWebSocket = (httpServer: HttpServer) => {
         return;
       }
 
-      logger.info(`WebSocket: Получено тестовое сообщение для чата ${chatId}: ${content}`);
+      logger.info(
+        `WebSocket: Получено тестовое сообщение для чата ${chatId}: ${content}`,
+      );
       io.to(chatId).emit("testMessage", {
         senderId: socket.user!._id,
         content,
         timestamp: new Date().toISOString(),
       });
-      logger.info(`WebSocket: Рассылка тестового сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`);
+      logger.info(
+        `WebSocket: Рассылка тестового сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`,
+      );
     });
 
     socket.on("disconnect", () => {

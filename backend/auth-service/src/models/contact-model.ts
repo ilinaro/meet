@@ -11,7 +11,7 @@ const ContactSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     contactId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 ContactSchema.index({ userId: 1, contactId: 1 }, { unique: true });

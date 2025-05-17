@@ -83,17 +83,6 @@ export class SocketService {
     this.socket.emit("message", { chatId, content });
   }
 
-  sendTestMessage(chatId: string, content: string): void {
-    if (!this.socket || !this.isConnected()) {
-      console.error("SocketService: Сокет не подключен");
-      return;
-    }
-    console.log(
-      `SocketService: Отправка тестового сообщения в ${chatId}: ${content}`,
-    );
-    this.socket.emit("testMessage", { chatId, content });
-  }
-
   onMessage(callback: (data: MessageData) => void): void {
     if (this.socket) {
       this.socket.on("message", (data) => {
@@ -135,3 +124,15 @@ export class SocketService {
 }
 
 export default new SocketService();
+
+
+  // sendTestMessage(chatId: string, content: string): void {
+  //   if (!this.socket || !this.isConnected()) {
+  //     console.error("SocketService: Сокет не подключен");
+  //     return;
+  //   }
+  //   console.log(
+  //     `SocketService: Отправка тестового сообщения в ${chatId}: ${content}`,
+  //   );
+  //   this.socket.emit("testMessage", { chatId, content });
+  // }

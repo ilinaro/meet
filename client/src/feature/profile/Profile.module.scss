@@ -129,10 +129,6 @@
   border-radius: 9999px;
 }
 
-.messages {
-  height: calc(100vh - 200px);
-}
-
 .inputMessage {
   display: flex;
   padding: 20px;
@@ -158,4 +154,53 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+}
+
+.messagesContainer {
+  height: calc(100vh - 200px);
+  overflow: hidden;
+  overflow-y: scroll;
+}
+
+.messageBlock {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.messageUser {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+  width: fit-content;
+  padding: 12px;
+  max-width: 600px;
+  word-break: break-word;
+}
+
+.messageSent {
+  align-self: flex-end;
+  border-radius: 15px 15px 0px 15px;
+  background-color: var(--color-message-sent);
+}
+
+.messageReceived {
+  border-radius: 15px 15px 15px 0;
+  background-color: var(--color-message-received);
+}
+
+.timestamp {
+  color: var(--color-violet);
+  margin-top: 5px;
+}
+
+.timestampSent {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.startChat {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

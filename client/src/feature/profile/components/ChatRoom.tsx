@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import SocketService from "../../../services/socket.service";
 import { useAppSelector } from "../../../store/useAppSelect";
 import Input from "../../../components/Input/Input";
-import { Button } from "../../../components";
+import { Button, Text } from "../../../components";
 import { selectUserMain } from "../../../store/userMainStateSlice";
 import { selectUserContact } from "../../../store/userContactStateSlice";
 import styles from "../Profile.module.scss";
 import { Loader } from "@mantine/core";
 import { useChatConnectQuery } from "../../../lib/ChatQuery";
+import clsx from "clsx";
 
 interface Message {
   senderId: string;
@@ -15,7 +16,7 @@ interface Message {
   timestamp: string;
 }
 
-export const Chat: React.FC = () => {
+export const ChatRoom: React.FC = () => {
   const userMain = useAppSelector(selectUserMain);
   const userContact = useAppSelector(selectUserContact);
   const [messageInput, setMessageInput] = useState("");
@@ -82,37 +83,63 @@ export const Chat: React.FC = () => {
     }
   };
 
-  const handleSendTestMessage = () => {
-    if (data?.chatId) {
-      console.log("Chat: Отправка тестового сообщения в", data.chatId);
-      SocketService.sendTestMessage(data.chatId, "Тестовое сообщение!");
-    }
-  };
-
   return (
     <div className={styles.chatContainer}>
-      <div className={styles.messages}>
-        {isPending && <Loader color="gray" size={20} />}
-        {messages.length === 0 && !isPending && <p>Нет сообщений</p>}
+      <div className={styles.messagesContainer}>
+        <div className={styles.startChat}>
+          {isPending &&
+            <Loader color="gray" size={20} />
+          }
+          {
+            messages.length === 0 && !isPending &&
+            <Text size={14} color="gray">
+              Начать общение c {userContact?.nickname}
+            </Text>
+          }
+        </div>
         {messages.map((msg, index) => (
           <div
-            key={index}
-            className={
-              msg.senderId === userMain?._id
-                ? styles.messageSent
-                : styles.messageReceived
-            }
+            className={styles.messageBlock}
+            key={msg.timestamp + index}
           >
-            <p>{msg.content}</p>
-            <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
+            <div
+              className={clsx(
+                styles.messageUser,
+                msg.senderId === userMain?._id
+                  ? styles.messageSent
+                  : styles.messageReceived
+              )}
+            >
+              <div>
+                {
+                  msg?.content &&
+                  <div>
+                    {
+                      <Text size={15}>
+                        {msg.content || "..."}
+                      </Text>
+                    }
+                  </div>
+                }
+                {
+                  msg?.timestamp &&
+                  <div className={clsx(styles.timestamp,
+                    msg.senderId === userMain?._id
+                      ? styles.timestampSent
+                      : styles.timestampReceived
+                  )}>
+                    <Text size={14}>
+                      {
+                        new Date(msg.timestamp).toLocaleTimeString()
+                      }
+                    </Text>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
         ))}
       </div>
-      {data?.chatId ? (
-        <div>Чат ID: {data.chatId}</div>
-      ) : (
-        <div>Чат не выбран</div>
-      )}
       <div className={styles.inputMessage}>
         <Input
           placeholder="Сообщение..."
@@ -122,10 +149,15 @@ export const Chat: React.FC = () => {
         <Button classNames={styles.enter} onClick={handleSendMessage}>
           {">"}
         </Button>
-        <Button classNames={styles.testButton} onClick={handleSendTestMessage}>
-          Тест
-        </Button>
       </div>
     </div>
   );
 };
+
+
+// const handleSendTestMessage = () => {
+//   if (data?.chatId) {
+//     console.log("Chat: Отправка тестового сообщения в", data.chatId);
+//     SocketService.sendTestMessage(data.chatId, "Тестовое сообщение!");
+//   }
+// };

@@ -15,7 +15,9 @@ function authMiddleware(req: any, res: Response, next: NextFunction) {
       return next(ApiError.UnauthorizedError());
     }
 
-    const userData = tokenService.validateAccessToken(accessToken) as DtoService | null;
+    const userData = tokenService.validateAccessToken(
+      accessToken,
+    ) as DtoService | null;
     if (!userData) {
       return next(ApiError.UnauthorizedError());
     }

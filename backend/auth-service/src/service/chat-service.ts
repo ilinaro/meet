@@ -27,14 +27,14 @@ class ChatService {
     try {
       if (typeof chatId !== "string" || typeof senderId !== "string") {
         throw new Error(
-          `Invalid input: chatId=${chatId}, senderId=${senderId}`
+          `Invalid input: chatId=${chatId}, senderId=${senderId}`,
         );
       }
       if (!content.trim()) {
         throw new Error("Message content cannot be empty");
       }
       console.log(
-        `Saving message: chatId=${chatId}, senderId=${senderId}, content=${content}`
+        `Saving message: chatId=${chatId}, senderId=${senderId}, content=${content}`,
       );
       const message = await MessageModel.create({
         chatId,

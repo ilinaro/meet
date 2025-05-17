@@ -26,7 +26,7 @@ class ChatController {
       if (!chatId || typeof chatId !== "string") {
         throw ApiError.BadRequest("Не указан chatId");
       }
-  
+
       const chat = await ChatModel.findById(chatId);
       if (!chat) {
         throw ApiError.BadRequest("Чат не найден");
@@ -34,11 +34,14 @@ class ChatController {
       if (!chat.participants.includes(currentUserId)) {
         throw ApiError.BadRequest("У вас нет доступа к этому чату");
       }
-  
+
       const messages = await ChatService.getMessages(chatId);
       res.json(messages);
     } catch (error) {
-      console.error(`Error in getMessages for chat ${req.query.chatId}:`, error);
+      console.error(
+        `Error in getMessages for chat ${req.query.chatId}:`,
+        error,
+      );
       next(error);
     }
   }
