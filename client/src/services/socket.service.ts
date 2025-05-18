@@ -13,7 +13,6 @@ interface ErrorData {
 
 export class SocketService {
   private socket: Socket | null = null;
-  private userId: string | null = null;
 
   connect(userId: string): void {
     const token = localStorage.getItem("token");
@@ -22,7 +21,6 @@ export class SocketService {
       return;
     }
 
-    this.userId = userId;
     console.log(`SocketService: Подключение к ${WS_URL} с userId=${userId}`);
     this.socket = io(WS_URL, {
       auth: { token },
@@ -124,15 +122,3 @@ export class SocketService {
 }
 
 export default new SocketService();
-
-
-  // sendTestMessage(chatId: string, content: string): void {
-  //   if (!this.socket || !this.isConnected()) {
-  //     console.error("SocketService: Сокет не подключен");
-  //     return;
-  //   }
-  //   console.log(
-  //     `SocketService: Отправка тестового сообщения в ${chatId}: ${content}`,
-  //   );
-  //   this.socket.emit("testMessage", { chatId, content });
-  // }

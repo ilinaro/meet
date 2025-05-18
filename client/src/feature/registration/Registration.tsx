@@ -3,8 +3,7 @@ import { Link } from "react-router-dom";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import styles from "./Registration.module.scss";
 import { useSignupQuery } from "../../lib";
-import { Button } from "../../components";
-import Input from "../../components/Input/Input";
+import { Button, Input } from "../../components";
 
 type SignupFormData = {
   email: string;

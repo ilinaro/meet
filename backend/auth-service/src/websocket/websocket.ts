@@ -20,14 +20,12 @@ export const initWebSocket = (httpServer: HttpServer) => {
   io.use(async (socket: AuthSocket, next) => {
     try {
       const token = socket.handshake.auth.token;
-      //   logger.info("WebSocket: Получен токен:", token);
       if (!token) {
         logger.error("WebSocket: Токен не предоставлен");
         return next(new Error("Токен не предоставлен"));
       }
 
       const userData = await tokenService.validateAccessToken(token);
-      //   logger.info("WebSocket: Результат валидации токена:", userData);
       if (!userData) {
         logger.error("WebSocket: Неверный или истёкший токен");
         return next(new Error("Неверный или истёкший токен"));

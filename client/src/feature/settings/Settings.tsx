@@ -1,13 +1,18 @@
 import { useNavigate } from "react-router-dom";
-import { Text } from "./../../components";
+import { Button, Text } from "./../../components";
 import styles from "./Settings.module.scss";
 import { RouteNames } from "../../routers/routeNames";
 import { useGetUserQuery } from "../../lib/UserQuery";
+import { useLogoutQuery } from "../../lib";
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
   const { data: userData } = useGetUserQuery();
-
+  const { mutate: logout, isPending: isLoggingOut } = useLogoutQuery();
+  const handleLogout = () => {
+    logout();
+  };
+  
   return (
     <div className={styles.wrapper}>
       <div className={styles.headSettings}>
@@ -30,6 +35,12 @@ export const Settings: React.FC = () => {
           Настройки
         </Text>
       </div>
+      <Button
+        onClick={handleLogout}
+        disabled={isLoggingOut}
+      >
+        Выйти
+      </Button>
     </div>
   );
 };

@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../routers/routeNames";
 import { useHadlerError } from "../useHadlerError";
 import { AxiosResponse } from "axios";
+import { useSetUserContact } from "../../store/userContactStateSlice";
+import { useSetUserMain } from "../../store/userMainStateSlice";
 
 export const useSignupQuery = () => {
   const dispatch = useAppDispatch();
@@ -45,12 +47,15 @@ export const useLoginQuery = () => {
 export const useLogoutQuery = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
+  const setUserContact = useSetUserContact();
+  const setUserMain = useSetUserMain();
   return useMutation({
     mutationFn: () => AuthService.logout(),
     onSettled: () => {
       localStorage.removeItem("token");
       dispatch(toggleAuthState({ isLogin: false }));
+      setUserMain(undefined);
+      setUserContact(undefined);
       navigate(RouteNames.START);
     },
   });

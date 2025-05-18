@@ -24,9 +24,8 @@
 
   &:focus {
     border-color: var(--color-violet);
-    box-shadow: 0 0 0 3px var(--color-violet-hover);
+    box-shadow: 0 0 0 2px var(--color-violet-hover);
     outline: none;
-    transform: scale(1.01);
   }
 
   &::placeholder {

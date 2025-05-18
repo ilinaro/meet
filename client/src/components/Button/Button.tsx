@@ -1,6 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import styles from "./Button.module.scss";
+import { Loader } from "@mantine/core";
 
 type ButtonProps = {
   onClick?: () => void;
@@ -27,6 +28,8 @@ export const Button: React.FC<ButtonProps> = ({
     onClick={type === "button" ? onClick : undefined}
     disabled={disabled || isLoading}
   >
-    {isLoading ? <span className={styles.loading}>⌀</span> : children}
+    {isLoading ? <span className={styles.loading}>
+      <Loader size={20} color="white"/>
+    </span> : children}
   </button>
 );

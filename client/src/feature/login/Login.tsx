@@ -1,10 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import styles from "./Login.module.scss";
-import { Button } from "../../components";
-import Input from "../../components/Input/Input";
+import { Button, Input } from "../../components";
 import { useLoginQuery } from "../../lib";
+import styles from "./Login.module.scss";
 
 type LoginFormData = {
   email: string;

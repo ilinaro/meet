@@ -3,17 +3,22 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 20px;
+  justify-content: space-between;
   box-shadow: 0px 0px 21px 1px var(--color-white-accent);
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 280px;
+  min-width: 280px;
   height: 54px;
   background-color: var(--color-white-general);
   & > img {
     object-fit: contain;
-    width: 100%;
+    width: fit-content;
     height: 100%;
   }
 }

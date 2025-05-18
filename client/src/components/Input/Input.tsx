@@ -12,11 +12,12 @@ type InputProps = {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onInput?: React.FormEventHandler<HTMLInputElement>;
   autoFocus?: boolean;
 };
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       label,
@@ -29,6 +30,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onChange,
       onFocus,
       onBlur,
+      onKeyDown,
       autoFocus = false,
       onInput,
     },
@@ -51,6 +53,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         onFocus={onFocus}
         onBlur={onBlur}
         onInput={onInput}
+        onKeyDown={onKeyDown}
         autoFocus={autoFocus}
         required={required}
         disabled={disabled}
@@ -61,4 +64,3 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = "Input";
-export default Input;

@@ -5,10 +5,12 @@ import { useDispatch } from "react-redux";
 
 interface UserState {
   userContact: IUser | undefined;
+  isInfoExpanded: boolean;
 }
 
 const initialState: UserState = {
   userContact: undefined,
+  isInfoExpanded: false,
 };
 
 const userStateSlice = createSlice({
@@ -18,11 +20,18 @@ const userStateSlice = createSlice({
     setUserContact(state: UserState, action: PayloadAction<IUser | undefined>) {
       state.userContact = action.payload;
     },
+    toggleInfo(state: UserState, action: PayloadAction<boolean>) {
+      state.isInfoExpanded = action.payload;
+    },
   },
 });
 
 export const selectUserContact = (state: RootState) => {
   return state.userContact.userContact;
+};
+
+export const isInfoExpanded = (state: RootState) => {
+  return state.userContact.isInfoExpanded;
 };
 
 export const useSetUserContact = () => {
@@ -33,5 +42,12 @@ export const useSetUserContact = () => {
   };
 };
 
+export const useToggleInfo = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  return (isExpanded: boolean): void => {
+    dispatch(toggleInfo(isExpanded));
+  };
+};
+
 export default userStateSlice.reducer;
-export const { setUserContact } = userStateSlice.actions;
+export const { setUserContact, toggleInfo } = userStateSlice.actions;

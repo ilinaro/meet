@@ -1,5 +1,5 @@
 import { Button, Text } from "../../../components";
-import { useDeleteChatQuery } from "../../../lib/ChatQuery";
+import { useAddChatQuery, useDeleteChatQuery } from "../../../lib/ChatQuery";
 import { useAppSelector } from "../../../store/useAppSelect";
 import {
   selectUserContact,
@@ -10,6 +10,7 @@ import styles from "../Profile.module.scss";
 
 export const UserProfile: React.FC = () => {
   const { mutate: deleteChat } = useDeleteChatQuery();
+  const { mutate: addUser } = useAddChatQuery();
   const userContact = useAppSelector(selectUserContact);
   const setUserContact = useSetUserContact();
   const handlerDeleteChat = () => {
@@ -18,6 +19,12 @@ export const UserProfile: React.FC = () => {
       setUserContact(undefined);
     }
   };
+
+  const addUserInContacts = (id: string) => {
+    addUser(id);
+  };
+
+  if (!userContact) return null
 
   return (
     <div className={styles.profileUser}>
@@ -37,11 +44,18 @@ export const UserProfile: React.FC = () => {
         Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"}
       </Text>
       <br />
-      {userContact?.isInContacts && (
+      {userContact?.isInContacts ?
         <Button onClick={handlerDeleteChat}>
-          Удалить чат с {userContact?.nickname}
-        </Button>
-      )}
+          Удалить контакт
+        </Button> :
+        <div className={styles.addedUser}>
+          <Button
+            onClick={() => addUserInContacts(userContact._id)}
+          >
+            Добавить в контакты
+          </Button>
+        </div>
+      }
     </div>
   );
 };

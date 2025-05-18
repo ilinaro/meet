@@ -1,32 +1,31 @@
-import React from "react";
-import { useAppSelector } from "../../../store/useAppSelect";
-import { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { UserProfile } from "./UserProfile";
 import { ChatRoom } from "./ChatRoom";
-import { UserHeader } from "./UserHeader";
+import { isInfoExpanded, selectUserContact } from "../../../store/userContactStateSlice";
+import { useSelector } from "react-redux";
 import styles from "../Profile.module.scss";
-import { selectUserContact } from "../../../store/userContactStateSlice";
+import { useChatConnectQuery } from "../../../lib/ChatQuery";
+import { useAppSelector } from "../../../store/useAppSelect";
 
 export const UserMessage: React.FC = React.memo(() => {
-  const [openProfile, setOpenProfile] = useState(false);
+  const isInfoContact = useSelector(isInfoExpanded);
   const userContact = useAppSelector(selectUserContact);
-
-  const toggleInfo = () => {
-    setOpenProfile(!openProfile);
-  };
+  const { data, mutate } = useChatConnectQuery();
 
   useEffect(() => {
-    setOpenProfile(false);
-  }, [userContact?._id]);
+    if (userContact?._id) {
+      mutate(userContact._id);
+    }
+  }, [userContact?._id, mutate]);
+
 
   return (
     <div className={styles.children}>
-      {userContact && (
-        <>
-          <UserHeader toggleInfo={toggleInfo} />
-          {openProfile ? <UserProfile /> : <ChatRoom />}
-        </>
-      )}
+      {
+        isInfoContact ?
+          <UserProfile /> :
+          <ChatRoom chatId={data?.chatId} />
+      }
     </div>
   );
 });
