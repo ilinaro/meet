@@ -1,5 +1,5 @@
 import express from "express";
-import { body, query } from "express-validator";
+import { body, query, param } from "express-validator";
 import chatController from "../controllers/chat-controller";
 import contactController from "../controllers/contact-controller";
 import authMiddleware from "../middleware/auth-middleware";
@@ -35,6 +35,8 @@ router.get(
   Routers.CHAT_MESSAGES,
   authMiddleware,
   query("chatId").notEmpty().withMessage("Не указан chatId"),
+  query("limit").optional().isInt({ min: 1 }).withMessage("Limit должен быть целым числом >= 1"), // Валидация limit
+  query("skip").optional().isInt({ min: 0 }).withMessage("Skip должен быть целым числом >= 0"), // Валидация skip
   chatController.getMessages,
 );
 

@@ -9,7 +9,7 @@ export const Profile: React.FC = () => {
   return (
     <div className={styles.content}>
       <SideBar />
-      {userContact ? <UserMessage /> : <StartMessage/>}
+      {userContact ? <UserMessage /> : <StartMessage />}
     </div>
   );
 };

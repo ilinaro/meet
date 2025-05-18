@@ -1,117 +1,82 @@
-import mongoose from "mongoose";
-import ChatModel from "../models/chat-model";
-import MessageModel from "../models/message-model";
-import UserModel from "../models/user-model";
 import ContactModel from "../models/contact-model";
-import UserStatusModel from "../models/user-status-model";
+import UserService from "./user-service";
+import ChatService from "./chat-service";
+import MessageModel from "../models/message-model";
 import ApiError from "../exceptions/api-error";
-import { ErrorMessages } from "../utils/text-message";
-import { IUser } from "../types/user";
+
+// Интерфейс для типизации contactId после populate
+interface PopulatedContactId {
+  _id: string;
+  nickname: string;
+  email: string;
+}
 
 class ContactService {
-  async addContact(currentUserId: string, targetUserId: string): Promise<void> {
-    if (currentUserId === targetUserId) {
+  async addContact(userId: string, contactId: string) {
+    if (userId === contactId) {
       throw ApiError.BadRequest("Нельзя добавить себя в контакты");
     }
 
-    const targetUser = await UserModel.findById(targetUserId);
-    if (!targetUser) {
-      throw ApiError.BadRequest(ErrorMessages.USER_NOT_FOUND);
-    }
-
     const existingContact = await ContactModel.findOne({
-      userId: currentUserId,
-      contactId: targetUserId,
+      userId,
+      contactId,
     });
+
     if (existingContact) {
-      throw ApiError.BadRequest("Пользователь уже в контактах");
+      throw ApiError.BadRequest("Контакт уже добавлен");
     }
 
-    const existingReverseContact = await ContactModel.findOne({
-      userId: targetUserId,
-      contactId: currentUserId,
-    });
-
-    await ContactModel.create({
-      userId: currentUserId,
-      contactId: targetUserId,
-    });
-
-    if (!existingReverseContact) {
-      await ContactModel.create({
-        userId: targetUserId,
-        contactId: currentUserId,
-      });
-    }
+    const contact = await ContactModel.create({ userId, contactId });
+    return contact;
   }
 
-  async getContacts(currentUserId: string): Promise<any[]> {
-    const contacts = await ContactModel.find({
-      userId: new mongoose.Types.ObjectId(currentUserId),
-    }).populate<{ contactId: IUser }>("contactId", "nickname email");
+  async getContacts(userId: string) {
+    // Указываем тип для populate
+    const contacts = await ContactModel.find({ userId }).populate<{
+      contactId: PopulatedContactId;
+    }>("contactId", "nickname email");
 
-    const result = await Promise.all(
-      contacts.map(async (contact) => {
-        const chat = await ChatModel.findOne({
-          participants: {
-            $all: [
-              new mongoose.Types.ObjectId(currentUserId),
-              new mongoose.Types.ObjectId(contact.contactId._id),
-            ],
-          },
-        });
+    const result = [];
+    for (const contact of contacts) {
+      if (!contact.contactId || !contact.contactId._id) {
+        continue; // Пропускаем, если contactId не заполнен
+      }
 
-        const lastMessages = chat
-          ? await MessageModel.find({ chatId: chat._id })
-              .populate("sender", "nickname")
-              .sort({ createdAt: -1 })
-              .limit(3)
-          : [];
+      const userData = await UserService.getUserById(contact.contactId._id.toString());
+      if (!userData) {
+        continue;
+      }
 
-        const status = await UserStatusModel.findOne({
-          userId: contact.contactId._id,
-        });
+      const chat = await ChatService.startChat(userId, contact.contactId._id.toString());
+      const lastMessages = await MessageModel.find({ chatId: chat._id })
+        .populate("sender", "nickname")
+        .sort({ createdAt: -1 })
+        .limit(3);
 
-        return {
-          _id: contact.contactId._id,
-          nickname: contact.contactId.nickname,
-          email: contact.contactId.email,
-          isOnline: status ? status.isOnline : false,
-          lastSeen: status && !status.isOnline ? status.lastSeen : null,
-          isInContacts: true,
-          lastMessages,
-        };
-      }),
-    );
+      result.push({
+        _id: contact.contactId._id.toString(),
+        nickname: contact.contactId.nickname,
+        email: contact.contactId.email,
+        isOnline: userData.isOnline,
+        lastSeen: userData.lastSeen,
+        isInContacts: true,
+      });
+    }
 
     return result;
   }
 
-  async removeContact(
-    currentUserId: string,
-    targetUserId: string,
-  ): Promise<void> {
-    if (currentUserId === targetUserId) {
-      throw ApiError.BadRequest("Нельзя удалить себя из контактов");
-    }
-
-    const targetUser = await UserModel.findById(targetUserId);
-    if (!targetUser) {
-      throw ApiError.BadRequest(ErrorMessages.USER_NOT_FOUND);
-    }
-
-    const existingContact = await ContactModel.findOne({
-      userId: currentUserId,
-      contactId: targetUserId,
+  async removeContact(userId: string, contactId: string) {
+    const contact = await ContactModel.findOneAndDelete({
+      userId,
+      contactId,
     });
-    if (!existingContact) {
-      throw ApiError.BadRequest("Пользователь не находится в контактах");
+
+    if (!contact) {
+      throw ApiError.BadRequest("Контакт не найден");
     }
 
-    await ContactModel.deleteOne({
-      userId: currentUserId,
-      contactId: targetUserId,
-    });
+    return contact;
   }
 }
 

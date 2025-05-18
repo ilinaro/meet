@@ -5,6 +5,8 @@ class DtoService {
   nickname: string;
   allowChatInvites?: boolean;
   isInContacts?: boolean;
+  isOnline?: boolean;
+  lastSeen?: Date | null;
 
   constructor(user: {
     _id: string;

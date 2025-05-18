@@ -17,8 +17,8 @@ interface Message {
 }
 
 type Props = {
-  chatId?: string
-}
+  chatId?: string;
+};
 
 export const ChatRoom: React.FC<Props> = ({ chatId }) => {
   const userMain = useAppSelector(selectUserMain);
@@ -48,7 +48,6 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
     }
   }, [userMain?._id]);
 
-
   useEffect(() => {
     if (chatId && SocketService.isConnected()) {
       console.log("Chat: Присоединение к WebSocket-чату", chatId);
@@ -57,9 +56,9 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
   }, [chatId, userContact?._id]);
 
   const handleSendMessageAndAddUser = () => {
-    if (!userContact || !chatId) return
+    if (!userContact || !chatId) return;
     if (!userContact.isInContacts) {
-      addUser(userContact._id)
+      addUser(userContact._id);
     }
     if (messageInput.trim() && chatId) {
       SocketService.sendMessage(chatId, messageInput);
@@ -68,12 +67,12 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
   };
 
   useEffect(() => {
-    setMessages([])
+    setMessages([]);
     if (inputRef.current) {
       inputRef.current.focus();
     }
-    setMessageInput("")
-  }, [chatId])
+    setMessageInput("");
+  }, [chatId]);
 
   return (
     <div className={styles.chatContainer}>
@@ -133,7 +132,12 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
             onChange={(e) => setMessageInput(e.target.value)}
           />
         </div>
-        <div className={clsx(styles.sendButton, messageInput && styles.sendButtonActive)}>
+        <div
+          className={clsx(
+            styles.sendButton,
+            messageInput && styles.sendButtonActive,
+          )}
+        >
           <Button
             classNames={styles.enter}
             onClick={handleSendMessageAndAddUser}
@@ -143,6 +147,6 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
           </Button>
         </div>
       </div>
-    </div >
+    </div>
   );
 };

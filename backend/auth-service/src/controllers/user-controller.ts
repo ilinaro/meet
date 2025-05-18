@@ -107,7 +107,6 @@ class UserController {
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const users = await UserService.getAllUsers();
-
       res.json(users);
       return;
     } catch (e) {
@@ -119,14 +118,12 @@ class UserController {
   async searchUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const { nickname } = req.query;
-
       const { _id: currentUserId } = req.user;
       if (!nickname || typeof nickname !== "string") {
         throw ApiError.BadRequest("Никнейм обязателен");
       }
 
       const users = await UserService.searchUsers(nickname, currentUserId);
-
       res.json(users);
     } catch (e) {
       logger.error("Ошибка при поиске пользователей", e);
@@ -146,6 +143,7 @@ class UserController {
       next(e);
     }
   }
+
   async getUser(req: Request, res: Response, next: NextFunction) {
     try {
       const userData = await UserService.getUserById(req.user._id);
@@ -155,6 +153,7 @@ class UserController {
       next(e);
     }
   }
+
   async getUserById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;

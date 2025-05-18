@@ -32,6 +32,11 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
           >
             <div className={styles.photoContants}>
               {contact.isOnline && <div className={styles.status}></div>}
+              {contact.isOnline ? (
+                <div className={styles.status}></div>
+              ) : (
+                <div className={styles.statusOffline}></div>
+              )}
               <Text size={35} color="violet">
                 {contact.nickname?.[0]?.toUpperCase() || "..."}
               </Text>

@@ -10,7 +10,7 @@ export const Header: React.FC = () => {
   const { isLogin } = useAppSelector((state) => state.authState);
   const location = useLocation();
 
-  const isHome = location.pathname === "/home"
+  const isHome = location.pathname === "/home";
 
   return (
     <div className={styles.header}>
@@ -20,13 +20,12 @@ export const Header: React.FC = () => {
         </div>
       </Link>
       {isLogin && isHome ? <UserHeader /> : null}
-      {!isLogin && <div className={styles.btns}>
-        <Button onClick={() => navigate("/registration")}>
-          Регистрация
-        </Button>
-        <Button onClick={() => navigate("/login")}>Войти</Button>
-      </div>
-      }
+      {!isLogin && (
+        <div className={styles.btns}>
+          <Button onClick={() => navigate("/registration")}>Регистрация</Button>
+          <Button onClick={() => navigate("/login")}>Войти</Button>
+        </div>
+      )}
     </div>
   );
 };

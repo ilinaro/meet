@@ -21,7 +21,7 @@ class ChatController {
 
   async getMessages(req: Request, res: Response, next: NextFunction) {
     try {
-      const { chatId } = req.query;
+      const { chatId, limit = "50", skip = "0" } = req.query; // Добавлены limit и skip
       const { _id: currentUserId } = req.user;
       if (!chatId || typeof chatId !== "string") {
         throw ApiError.BadRequest("Не указан chatId");
@@ -35,7 +35,16 @@ class ChatController {
         throw ApiError.BadRequest("У вас нет доступа к этому чату");
       }
 
-      const messages = await ChatService.getMessages(chatId);
+      const parsedLimit = parseInt(limit as string, 10);
+      const parsedSkip = parseInt(skip as string, 10);
+      if (isNaN(parsedLimit) || parsedLimit < 1) {
+        throw ApiError.BadRequest("Неверное значение limit");
+      }
+      if (isNaN(parsedSkip) || parsedSkip < 0) {
+        throw ApiError.BadRequest("Неверное значение skip");
+      }
+
+      const messages = await ChatService.getMessages(chatId, parsedLimit, parsedSkip);
       res.json(messages);
     } catch (error) {
       console.error(

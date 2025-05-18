@@ -1,6 +1,10 @@
 import { Text } from "../..";
 import { useAppSelector } from "../../../store/useAppSelect";
-import { isInfoExpanded, selectUserContact, useToggleInfo } from "../../../store/userContactStateSlice";
+import {
+  isInfoExpanded,
+  selectUserContact,
+  useToggleInfo,
+} from "../../../store/userContactStateSlice";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import styles from "./UserHeader.module.scss";
@@ -12,14 +16,17 @@ export const UserHeader: React.FC = () => {
   const toggleInfo = useToggleInfo();
 
   useEffect(() => {
-    toggleInfo(false)
+    toggleInfo(false);
   }, [userContact?._id]);
 
   if (!userContact?._id) return null;
 
   return (
     <div className={styles.userHeader}>
-      <div className={styles.name} onClick={() => toggleInfo(!isHeaderExpanded)}>
+      <div
+        className={styles.name}
+        onClick={() => toggleInfo(!isHeaderExpanded)}
+      >
         <div className={styles.photoContact}>
           {userContact && userContact.isOnline && (
             <div className={styles.status}></div>

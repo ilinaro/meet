@@ -7,6 +7,7 @@ import TokenService from "./token-service";
 import DtoService from "./dto-service";
 import ApiError from "../exceptions/api-error";
 import ContactModel from "../models/contact-model";
+import UserStatusModel from "../models/user-status-model";
 
 interface User {
   _id: string | { toString(): string };
@@ -17,15 +18,32 @@ interface User {
 }
 
 class UserService {
-  private createUserDto(user: User, currentUserId?: string): DtoService {
+  private createUserDto(user: User, currentUserId?: string, status?: { isOnline: boolean; lastSeen: Date | null }): DtoService {
     const userDtoObject = {
       _id: user._id.toString(),
       email: user.email,
       isActivated: user.isActivated,
       nickname: user.nickname,
       allowChatInvites: user.allowChatInvites,
+      isInContacts: false, // По умолчанию false, переопределяется в searchUsers
     };
-    return new DtoService(userDtoObject);
+    const userDto = new DtoService(userDtoObject);
+    // Добавляем isOnline и lastSeen после создания
+    Object.assign(userDto, {
+      isOnline: status ? status.isOnline : false,
+      lastSeen: status && !status.isOnline ? status.lastSeen : null,
+    });
+    return userDto;
+  }
+
+  async getUserStatuses(userIds: string[]): Promise<{ [key: string]: { isOnline: boolean; lastSeen: Date | null } }> {
+    const statuses = await UserStatusModel.find({ userId: { $in: userIds } }).select("userId isOnline lastSeen");
+    const statusMap: { [key: string]: { isOnline: boolean; lastSeen: Date | null } } = {};
+    userIds.forEach((id) => {
+      const status = statuses.find((s) => s.userId === id);
+      statusMap[id] = { isOnline: status ? status.isOnline : false, lastSeen: status && !status.isOnline ? status.lastSeen : null };
+    });
+    return statusMap;
   }
 
   async registration(email: string, password: string, nickname: string) {
@@ -86,10 +104,12 @@ class UserService {
     await TokenService.saveToken(userDto._id, tokens.refreshToken);
     return { ...tokens };
   }
+
   async logout(refreshToken: string) {
     const token = TokenService.removeToken(refreshToken);
     return token;
   }
+
   async refresh(refreshToken: string) {
     if (!refreshToken) {
       throw ApiError.UnauthorizedError();
@@ -106,14 +126,16 @@ class UserService {
     }
 
     const userDto = this.createUserDto(user);
-
     const tokens = TokenService.generateTokens({ ...userDto });
     await TokenService.saveToken(userDto._id, tokens.refreshToken);
     return { ...tokens };
   }
+
   async getAllUsers() {
     const users = await UserModel.find();
-    return users;
+    const userIds = users.map((user) => user._id.toString());
+    const statuses = await this.getUserStatuses(userIds);
+    return users.map((user) => this.createUserDto(user, undefined, statuses[user._id.toString()]));
   }
 
   async searchUsers(nickname: string, currentUserId?: string) {
@@ -122,30 +144,25 @@ class UserService {
       allowChatInvites: true,
     }).select("nickname _id email isActivated allowChatInvites");
 
+    const userIds = users.map((user) => user._id.toString());
+    const statuses = await this.getUserStatuses(userIds);
+
     const result = [];
     for (const user of users) {
       if (currentUserId && user._id.toString() === currentUserId) {
         continue;
       }
 
-      if (currentUserId) {
-        const contact = await ContactModel.findOne({
-          userId: currentUserId,
-          contactId: user._id,
-        });
-        if (contact) {
-          continue;
-        }
-      }
+      const isInContacts = currentUserId
+        ? !!(await ContactModel.findOne({
+            userId: currentUserId,
+            contactId: user._id,
+          }))
+        : false;
 
-      result.push({
-        _id: user._id.toString(),
-        nickname: user.nickname,
-        email: user.email,
-        isActivated: user.isActivated,
-        allowChatInvites: user.allowChatInvites,
-        isInContacts: false,
-      });
+      const userDto = this.createUserDto(user, currentUserId, statuses[user._id.toString()]);
+      userDto.isInContacts = isInContacts; // Добавляем isInContacts
+      result.push(userDto);
     }
 
     return result;
@@ -175,7 +192,8 @@ class UserService {
     }
 
     await user.save();
-    const userDto = this.createUserDto(user);
+    const statuses = await this.getUserStatuses([userId]);
+    const userDto = this.createUserDto(user, undefined, statuses[userId]);
     return userDto;
   }
 
@@ -184,7 +202,8 @@ class UserService {
     if (!user) {
       return null;
     }
-    const userDto = this.createUserDto(user);
+    const statuses = await this.getUserStatuses([userId]);
+    const userDto = this.createUserDto(user, undefined, statuses[userId]);
     return userDto;
   }
 }

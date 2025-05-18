@@ -1,7 +1,10 @@
 import React, { useEffect } from "react";
 import { UserProfile } from "./UserProfile";
 import { ChatRoom } from "./ChatRoom";
-import { isInfoExpanded, selectUserContact } from "../../../store/userContactStateSlice";
+import {
+  isInfoExpanded,
+  selectUserContact,
+} from "../../../store/userContactStateSlice";
 import { useSelector } from "react-redux";
 import styles from "../Profile.module.scss";
 import { useChatConnectQuery } from "../../../lib/ChatQuery";
@@ -18,14 +21,9 @@ export const UserMessage: React.FC = React.memo(() => {
     }
   }, [userContact?._id, mutate]);
 
-
   return (
     <div className={styles.children}>
-      {
-        isInfoContact ?
-          <UserProfile /> :
-          <ChatRoom chatId={data?.chatId} />
-      }
+      {isInfoContact ? <UserProfile /> : <ChatRoom chatId={data?.chatId} />}
     </div>
   );
 });

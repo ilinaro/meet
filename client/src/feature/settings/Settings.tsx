@@ -12,7 +12,7 @@ export const Settings: React.FC = () => {
   const handleLogout = () => {
     logout();
   };
-  
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.headSettings}>
@@ -35,10 +35,7 @@ export const Settings: React.FC = () => {
           Настройки
         </Text>
       </div>
-      <Button
-        onClick={handleLogout}
-        disabled={isLoggingOut}
-      >
+      <Button onClick={handleLogout} disabled={isLoggingOut}>
         Выйти
       </Button>
     </div>

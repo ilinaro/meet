@@ -50,11 +50,14 @@ class ChatService {
       throw error;
     }
   }
-  async getMessages(chatId: string, limit: number = 50) {
+
+  async getMessages(chatId: string, limit: number = 50, skip: number = 0) {
+    // Добавлен параметр skip для пагинации
     const messages = await MessageModel.find({ chatId })
       .populate("sender", "nickname")
       .sort({ createdAt: 1 })
-      .limit(limit);
+      .skip(skip) // Пропускаем указанное количество сообщений
+      .limit(limit); // Ограничиваем количество возвращаемых сообщений
     return messages;
   }
 }

@@ -17,8 +17,6 @@ export const UserInfo: React.FC = () => {
     }
   }, [userMain]);
 
-
-
   return (
     <div
       className={styles.profile}
@@ -35,8 +33,6 @@ export const UserInfo: React.FC = () => {
           {userMain ? userMain.nickname : "..."}
         </Text>
       </div>
-
-
     </div>
   );
 };

@@ -5,7 +5,7 @@ import {
   selectUserContact,
   useSetUserContact,
 } from "../../../store/userContactStateSlice";
-
+import dayjs from "dayjs";
 import styles from "../Profile.module.scss";
 
 export const UserProfile: React.FC = () => {
@@ -24,7 +24,7 @@ export const UserProfile: React.FC = () => {
     addUser(id);
   };
 
-  if (!userContact) return null
+  if (!userContact) return null;
 
   return (
     <div className={styles.profileUser}>
@@ -36,26 +36,25 @@ export const UserProfile: React.FC = () => {
         {userContact?.isOnline ? "В сети" : "Не в сети"}
       </Text>
       <br />
-      <Text size={25} fw={400}>
-        {userContact?.lastSeen ? userContact?.lastSeen : "очень давно"}
+      <Text size={25} fw={400}>Был{" "}
+        {userContact?.lastSeen ?
+          dayjs(userContact?.lastSeen).format('DD.MM.YYYY HH:mm')
+          : "очень давно"}
       </Text>
       <br />
       <Text size={25} fw={400}>
         Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"}
       </Text>
       <br />
-      {userContact?.isInContacts ?
-        <Button onClick={handlerDeleteChat}>
-          Удалить контакт
-        </Button> :
+      {userContact?.isInContacts ? (
+        <Button onClick={handlerDeleteChat}>Удалить контакт</Button>
+      ) : (
         <div className={styles.addedUser}>
-          <Button
-            onClick={() => addUserInContacts(userContact._id)}
-          >
+          <Button onClick={() => addUserInContacts(userContact._id)}>
             Добавить в контакты
           </Button>
         </div>
-      }
+      )}
     </div>
   );
 };
