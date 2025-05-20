@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from "../../../components";
 import { motion } from "framer-motion";
 import { Loader } from "@mantine/core";
-import { IUser } from "../../../models";
+import { IContact } from "../../../models";
 import { useAppSelector } from "../../../store/useAppSelect";
 import clsx from "clsx";
 import styles from "../Profile.module.scss";
@@ -13,8 +13,8 @@ import {
 
 type Props = {
   searchUser?: string;
-  searchData?: IUser[];
-  contactsData?: IUser[];
+  searchData?: IContact[];
+  contactsData?: IContact[];
   isLoading: boolean;
 };
 
@@ -23,7 +23,7 @@ export const SearchList: React.FC<Props> = React.memo(
     const setUserContact = useSetUserContact();
     const userContact = useAppSelector(selectUserContact);
 
-    const choiceUser = (userItem: IUser) => {
+    const choiceUser = (userItem: IContact) => {
       const isContact = !!contactsData?.find(
         (contact) => contact._id === userItem._id,
       );
@@ -53,7 +53,7 @@ export const SearchList: React.FC<Props> = React.memo(
                 onClick={() => choiceUser(userItem)}
               >
                 <div className={styles.photoContants}>
-                  {userItem.isOnline && <div className={styles.status}></div>}
+                  {/* {userItem.isOnline && <div className={styles.status}></div>} */}
                   <Text size={35} color="violet">
                     {userItem.nickname?.[0]?.toUpperCase() || "..."}
                   </Text>

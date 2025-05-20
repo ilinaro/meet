@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { IUser } from "../models";
+import { IContact } from "../models";
 import { AppDispatch, RootState } from ".";
 import { useDispatch } from "react-redux";
 
 interface UserState {
-  userContact: IUser | undefined;
+  userContact: IContact | undefined;
   isInfoExpanded: boolean;
 }
 
@@ -17,7 +17,7 @@ const userStateSlice = createSlice({
   name: "userContact",
   initialState,
   reducers: {
-    setUserContact(state: UserState, action: PayloadAction<IUser | undefined>) {
+    setUserContact(state: UserState, action: PayloadAction<IContact | undefined>) {
       state.userContact = action.payload;
     },
     toggleInfo(state: UserState, action: PayloadAction<boolean>) {
@@ -37,7 +37,7 @@ export const isInfoExpanded = (state: RootState) => {
 export const useSetUserContact = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  return (userContact: IUser | undefined): void => {
+  return (userContact: IContact | undefined): void => {
     dispatch(setUserContact(userContact));
   };
 };

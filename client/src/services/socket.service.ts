@@ -14,42 +14,40 @@ interface ErrorData {
 export class SocketService {
   private socket: Socket | null = null;
 
-  connect(userId: string): void {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("SocketService: Токен не найден");
-      return;
-    }
+  connect(userId: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("SocketService: Токен не найден");
+        reject("Нет токена");
+        return;
+      }
 
-    console.log(`SocketService: Подключение к ${WS_URL} с userId=${userId}`);
-    this.socket = io(WS_URL, {
-      auth: { token },
-      query: { userId },
-      withCredentials: true,
-      path: "/socket.io",
-    });
+      this.socket = io(WS_URL, {
+        auth: { token },
+        query: { userId },
+        withCredentials: true,
+        path: "/socket.io",
+      });
 
-    this.socket.on("connect", () => {
-      console.log(
-        `SocketService: Подключено как пользователь ${userId}, socket ID: ${this.socket?.id}`,
-      );
-    });
+      this.socket.on("connect", () => {
+        console.log(`SocketService: Подключено как ${userId}`);
+        resolve();
+      });
 
-    this.socket.on("connect_error", (error) => {
-      console.error("SocketService: Ошибка подключения:", error.message);
-    });
+      this.socket.on("connect_error", (error) => {
+        console.error("SocketService: Ошибка подключения:", error.message);
+        reject(error);
+      });
 
-    this.socket.on("error", (data: ErrorData) => {
-      console.error("SocketService: Ошибка сервера:", data.message);
+      this.socket.on("disconnect", (reason) => {
+        console.log(`SocketService: Отключено: ${reason}`);
+      });
     });
+  }
 
-    this.socket.on("disconnect", (reason) => {
-      console.log(`SocketService: Отключено, причина: ${reason}`);
-    });
-
-    this.socket.onAny((event, ...args) => {
-      console.log(`SocketService: Получено событие: ${event}`, args);
-    });
+  onConnect(callback: () => void): void {
+    this.socket?.on("connect", callback);
   }
 
   joinChat(targetUserId: string, chatId: string): void {
@@ -58,7 +56,7 @@ export class SocketService {
       return;
     }
     console.log(
-      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`,
+      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`
     );
     this.socket.emit("joinChat", { targetUserId, chatId });
   }

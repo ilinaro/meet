@@ -8,4 +8,12 @@ export interface IUser {
   isOnline?: boolean;
   lastSeen?: string | null;
   lastMessages?: unknown;
+  chatId?: string | null;
+}
+
+export interface IContact {
+  readonly chatId: string | null;
+  readonly isInContacts: boolean;
+  readonly nickname: string;
+  readonly _id: string;
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { IUser } from "../../../models";
+import { IContact } from "../../../models";
 import { Text } from "../../../components";
 import styles from "../Profile.module.scss";
 import clsx from "clsx";
@@ -10,17 +10,18 @@ import {
 } from "../../../store/userContactStateSlice";
 
 type Props = {
-  contactsData?: IUser[];
+  contactsData?: IContact[];
 };
 
 export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
   const setUserContact = useSetUserContact();
   const userContact = useAppSelector(selectUserContact);
 
+  const isListNoEmpty = contactsData && contactsData.length > 0
+
   return (
     <div className={styles.searchResults}>
-      {contactsData &&
-        contactsData.length > 0 &&
+      { isListNoEmpty &&
         contactsData.map((contact) => (
           <div
             key={contact._id}
@@ -31,12 +32,7 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
             onClick={() => setUserContact(contact)}
           >
             <div className={styles.photoContants}>
-              {contact.isOnline && <div className={styles.status}></div>}
-              {contact.isOnline ? (
-                <div className={styles.status}></div>
-              ) : (
-                <div className={styles.statusOffline}></div>
-              )}
+              {/* {contact.isOnline && <div className={styles.status}></div>} */}
               <Text size={35} color="violet">
                 {contact.nickname?.[0]?.toUpperCase() || "..."}
               </Text>

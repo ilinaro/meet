@@ -28,9 +28,9 @@ export const UserHeader: React.FC = () => {
         onClick={() => toggleInfo(!isHeaderExpanded)}
       >
         <div className={styles.photoContact}>
-          {userContact && userContact.isOnline && (
+          {/* {userContact && userContact.isOnline && (
             <div className={styles.status}></div>
-          )}
+          )} */}
           <Text size={35} color="violet">
             {userContact?.nickname?.[0]?.toUpperCase() || "..."}
           </Text>

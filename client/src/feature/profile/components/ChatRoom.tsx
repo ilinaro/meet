@@ -16,16 +16,15 @@ interface Message {
   timestamp: string;
 }
 
-type Props = {
-  chatId?: string;
-};
-
-export const ChatRoom: React.FC<Props> = ({ chatId }) => {
+export const ChatRoom: React.FC = () => {
   const userMain = useAppSelector(selectUserMain);
   const userContact = useAppSelector(selectUserContact);
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isSocketReady, setIsSocketReady] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const outputRef = useRef<boolean>(null);
+  const hasJoinedRef = useRef(false);
   const { mutate: addUser } = useAddChatQuery();
 
   useEffect(() => {
@@ -34,37 +33,65 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
         SocketService.connect(userMain._id);
       }
 
+      const handleConnect = () => {
+        console.log("ChatRoom: Сокет подключен");
+        setIsSocketReady(true);
+      };
+
+      SocketService.onConnect(handleConnect);
+
       SocketService.onMessage((message) => {
         setMessages((prev) => [...prev, message]);
       });
 
       SocketService.onError(({ message }) => {
-        console.error("Chat: Ошибка сокета:", message);
+        console.error("ChatRoom: Ошибка сокета:", message);
       });
 
       return () => {
         SocketService.disconnect();
+        setIsSocketReady(false);
+        hasJoinedRef.current = false;
       };
     }
   }, [userMain?._id]);
 
   useEffect(() => {
-    if (chatId && SocketService.isConnected()) {
-      console.log("Chat: Присоединение к WebSocket-чату", chatId);
-      userContact?._id && SocketService.joinChat(userContact._id, chatId);
-    }
-  }, [chatId, userContact?._id]);
-
-  const handleSendMessageAndAddUser = () => {
-    if (!userContact || !chatId) return;
-    if (!userContact.isInContacts) {
+    if (userContact && !userContact?.isInContacts && outputRef.current) {
       addUser(userContact._id);
     }
-    if (messageInput.trim() && chatId) {
-      SocketService.sendMessage(chatId, messageInput);
+  }, [userContact?._id && outputRef.current]);
+
+  useEffect(() => {
+    hasJoinedRef.current = false;
+    outputRef.current = false;
+  }, [userContact?.chatId]);
+
+  useEffect(() => {
+    if (
+      userContact?.chatId &&
+      userContact._id &&
+      isSocketReady &&
+      !hasJoinedRef.current
+    ) {
+      console.log("ChatRoom: Присоединяемся к чату", userContact.chatId);
+      SocketService.joinChat(userContact._id, userContact.chatId);
+      hasJoinedRef.current = true;
+    }
+  }, [userContact?.chatId, userContact?._id, isSocketReady]);
+
+  const handleSendMessageAndAddUser = () => {
+    if (messageInput.trim() && userContact?.chatId) {
+      SocketService.sendMessage(userContact.chatId, messageInput);
       setMessageInput("");
     }
   };
+
+  useEffect(() => {
+    if (messageInput.length === 1 && !outputRef.current) {
+      outputRef.current = true;
+    }
+  }, [messageInput]);
 
   useEffect(() => {
     setMessages([]);
@@ -72,7 +99,7 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
       inputRef.current.focus();
     }
     setMessageInput("");
-  }, [chatId]);
+  }, [userContact?.chatId]);
 
   return (
     <div className={styles.chatContainer}>
@@ -80,7 +107,7 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
         {messages.length === 0 && (
           <div className={styles.startChat}>
             <Text size={14} color="gray">
-              Начать общение c {userContact?.nickname}
+              Начать общение с {userContact?.nickname}
             </Text>
           </div>
         )}
@@ -95,9 +122,7 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
               )}
             >
               <div>
-                {msg?.content && (
-                  <div>{<Text size={15}>{msg.content || "..."}</Text>}</div>
-                )}
+                {msg?.content && <Text size={15}>{msg.content}</Text>}
                 {msg?.timestamp && (
                   <div
                     className={clsx(
@@ -107,9 +132,7 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
                         : styles.timestampReceived,
                     )}
                   >
-                    <Text size={14}>
-                      {dayjs(msg.timestamp).format("HH:mm")}
-                    </Text>
+                    <Text size={14}>{dayjs(msg.timestamp).format("HH:mm")}</Text>
                   </div>
                 )}
               </div>
@@ -117,12 +140,13 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
           </div>
         ))}
       </div>
+
       <div className={styles.actionMessage}>
         <div className={styles.inputMessage}>
           <Input
             placeholder="Сообщение..."
             value={messageInput}
-            autoFocus={!!chatId}
+            autoFocus={!!userContact?.chatId}
             ref={inputRef}
             onKeyDown={(e) => {
               if (e.key === "Enter" && messageInput.trim()) {
@@ -141,7 +165,7 @@ export const ChatRoom: React.FC<Props> = ({ chatId }) => {
           <Button
             classNames={styles.enter}
             onClick={handleSendMessageAndAddUser}
-            disabled={!chatId}
+            disabled={!userContact?.chatId}
           >
             <RiSendPlane2Line />
           </Button>

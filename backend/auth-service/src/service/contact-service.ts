@@ -1,10 +1,7 @@
 import ContactModel from "../models/contact-model";
-import UserService from "./user-service";
 import ChatService from "./chat-service";
-import MessageModel from "../models/message-model";
 import ApiError from "../exceptions/api-error";
 
-// Интерфейс для типизации contactId после populate
 interface PopulatedContactId {
   _id: string;
   nickname: string;
@@ -16,7 +13,7 @@ class ContactService {
     if (userId === contactId) {
       throw ApiError.BadRequest("Нельзя добавить себя в контакты");
     }
-
+    const chatId = await ChatService.startChat(userId, contactId);
     const existingContact = await ContactModel.findOne({
       userId,
       contactId,
@@ -26,44 +23,23 @@ class ContactService {
       throw ApiError.BadRequest("Контакт уже добавлен");
     }
 
-    const contact = await ContactModel.create({ userId, contactId });
+    const contact = await ContactModel.create({ userId, contactId, chatId });
     return contact;
   }
 
   async getContacts(userId: string) {
-    // Указываем тип для populate
     const contacts = await ContactModel.find({ userId }).populate<{
       contactId: PopulatedContactId;
-    }>("contactId", "nickname email");
+    }>("contactId", "nickname");
 
-    const result = [];
-    for (const contact of contacts) {
-      if (!contact.contactId || !contact.contactId._id) {
-        continue; // Пропускаем, если contactId не заполнен
-      }
-
-      const userData = await UserService.getUserById(contact.contactId._id.toString());
-      if (!userData) {
-        continue;
-      }
-
-      const chat = await ChatService.startChat(userId, contact.contactId._id.toString());
-      const lastMessages = await MessageModel.find({ chatId: chat._id })
-        .populate("sender", "nickname")
-        .sort({ createdAt: -1 })
-        .limit(3);
-
-      result.push({
-        _id: contact.contactId._id.toString(),
+    return contacts.map((contact) => {
+      return {
+        _id: contact.contactId._id,
         nickname: contact.contactId.nickname,
-        email: contact.contactId.email,
-        isOnline: userData.isOnline,
-        lastSeen: userData.lastSeen,
         isInContacts: true,
-      });
-    }
-
-    return result;
+        chatId: contact.chatId,
+      };
+    });
   }
 
   async removeContact(userId: string, contactId: string) {

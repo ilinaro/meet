@@ -8,6 +8,7 @@ import DtoService from "./dto-service";
 import ApiError from "../exceptions/api-error";
 import ContactModel from "../models/contact-model";
 import UserStatusModel from "../models/user-status-model";
+import mongoose from "mongoose";
 
 interface User {
   _id: string | { toString(): string };
@@ -18,7 +19,11 @@ interface User {
 }
 
 class UserService {
-  private createUserDto(user: User, currentUserId?: string, status?: { isOnline: boolean; lastSeen: Date | null }): DtoService {
+  private createUserDto(
+    user: User,
+    currentUserId?: string,
+    status?: { isOnline: boolean; lastSeen: Date | null }
+  ): DtoService {
     const userDtoObject = {
       _id: user._id.toString(),
       email: user.email,
@@ -36,12 +41,21 @@ class UserService {
     return userDto;
   }
 
-  async getUserStatuses(userIds: string[]): Promise<{ [key: string]: { isOnline: boolean; lastSeen: Date | null } }> {
-    const statuses = await UserStatusModel.find({ userId: { $in: userIds } }).select("userId isOnline lastSeen");
-    const statusMap: { [key: string]: { isOnline: boolean; lastSeen: Date | null } } = {};
+  async getUserStatuses(
+    userIds: string[]
+  ): Promise<{ [key: string]: { isOnline: boolean; lastSeen: Date | null } }> {
+    const statuses = await UserStatusModel.find({
+      userId: { $in: userIds },
+    }).select("userId isOnline lastSeen");
+    const statusMap: {
+      [key: string]: { isOnline: boolean; lastSeen: Date | null };
+    } = {};
     userIds.forEach((id) => {
       const status = statuses.find((s) => s.userId === id);
-      statusMap[id] = { isOnline: status ? status.isOnline : false, lastSeen: status && !status.isOnline ? status.lastSeen : null };
+      statusMap[id] = {
+        isOnline: status ? status.isOnline : false,
+        lastSeen: status && !status.isOnline ? status.lastSeen : null,
+      };
     });
     return statusMap;
   }
@@ -69,7 +83,7 @@ class UserService {
 
     await MailService.sendActivationMail(
       email,
-      `${process.env.API_URL}/api/active/${activationLink}`,
+      `${process.env.API_URL}/api/active/${activationLink}`
     );
     const userDto = this.createUserDto(user);
     const tokens = TokenService.generateTokens({ ...userDto });
@@ -135,42 +149,59 @@ class UserService {
     const users = await UserModel.find();
     const userIds = users.map((user) => user._id.toString());
     const statuses = await this.getUserStatuses(userIds);
-    return users.map((user) => this.createUserDto(user, undefined, statuses[user._id.toString()]));
+    return users.map((user) =>
+      this.createUserDto(user, undefined, statuses[user._id.toString()])
+    );
   }
 
   async searchUsers(nickname: string, currentUserId?: string) {
-    const users = await UserModel.find({
+    const limit = 50;
+    
+    // Используем $text индекс, если он доступен, иначе используем regex
+    // Примечание: необходимо создать индекс в MongoDB: db.users.createIndex({ nickname: "text" })
+    const query = {
       nickname: { $regex: nickname, $options: "i" },
-      allowChatInvites: true,
-    }).select("nickname _id email isActivated allowChatInvites");
-
-    const userIds = users.map((user) => user._id.toString());
-    const statuses = await this.getUserStatuses(userIds);
-
-    const result = [];
-    for (const user of users) {
-      if (currentUserId && user._id.toString() === currentUserId) {
-        continue;
-      }
-
-      const isInContacts = currentUserId
-        ? !!(await ContactModel.findOne({
-            userId: currentUserId,
-            contactId: user._id,
-          }))
-        : false;
-
-      const userDto = this.createUserDto(user, currentUserId, statuses[user._id.toString()]);
-      userDto.isInContacts = isInContacts; // Добавляем isInContacts
-      result.push(userDto);
+      ...(currentUserId ? { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } } : {})
+    };
+    
+    const [users, contacts] = await Promise.all([
+      UserModel.find(query)
+        .select("nickname _id")
+        .limit(limit),
+      
+      currentUserId ? 
+        ContactModel.find({ userId: currentUserId })
+          .select("contactId")
+        : Promise.resolve([])
+    ]);
+    
+    if (contacts.length === 0) {
+      return users.map(user => ({
+        _id: user._id,
+        nickname: user.nickname,
+        isInContacts: false,
+        chatId: null
+      }));
     }
-
-    return result;
+    
+    const contactIdsSet = new Set(
+      contacts.map(contact => contact.contactId.toString())
+    );
+    
+    return users.map(user => {
+      const userId = user._id.toString();
+      return {
+        _id: user._id,
+        nickname: user.nickname,
+        isInContacts: contactIdsSet.has(userId),
+        chatId: null
+      };
+    });
   }
 
   async updateUser(
     userId: string,
-    updates: { nickname?: string; allowChatInvites?: boolean },
+    updates: { nickname?: string; allowChatInvites?: boolean }
   ) {
     const user = await UserModel.findById(userId);
     if (!user) {

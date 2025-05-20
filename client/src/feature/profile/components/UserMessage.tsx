@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { UserProfile } from "./UserProfile";
 import { ChatRoom } from "./ChatRoom";
 import {
@@ -13,17 +13,17 @@ import { useAppSelector } from "../../../store/useAppSelect";
 export const UserMessage: React.FC = React.memo(() => {
   const isInfoContact = useSelector(isInfoExpanded);
   const userContact = useAppSelector(selectUserContact);
-  const { data, mutate } = useChatConnectQuery();
+  const { mutate } = useChatConnectQuery();
 
   useEffect(() => {
-    if (userContact?._id) {
+    if (userContact?._id && !userContact?.chatId) {
       mutate(userContact._id);
     }
-  }, [userContact?._id, mutate]);
+  }, [userContact?._id]);
 
   return (
     <div className={styles.children}>
-      {isInfoContact ? <UserProfile /> : <ChatRoom chatId={data?.chatId} />}
+      {isInfoContact ? <UserProfile /> : <ChatRoom />}
     </div>
   );
 });

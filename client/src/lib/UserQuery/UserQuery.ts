@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import UserService from "../../services/user.service";
-import { IUser } from "../../models";
+import { IContact } from "../../models";
 
 export const useGetUserQuery = () => {
   return useQuery({
@@ -13,7 +13,7 @@ export const useGetUserQuery = () => {
 };
 
 export const useSearchUsersQuery = (searchTerm: string) => {
-  return useQuery<IUser[], Error>({
+  return useQuery<IContact[], Error>({
     queryKey: ["searchUsers", searchTerm],
     queryFn: async () => {
       const response = await UserService.searchUsers(searchTerm);

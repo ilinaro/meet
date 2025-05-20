@@ -51,10 +51,20 @@ export const useDeleteChatQuery = () => {
 };
 
 export const useChatConnectQuery = () => {
+  const userContact = useAppSelector(selectUserContact);
+  const setUserContact = useSetUserContact();
   return useMutation({
     mutationFn: async (id: string) => {
       const { data } = await ChatService.startChat(id || "");
       return data;
+    },
+    onSuccess: (data) => {
+      if (userContact && data?.chatId) {
+        setUserContact({
+          ...userContact,
+          chatId: data.chatId,
+        });
+      }
     },
     onError: (error: any) => {
       useHadlerError(error?.response?.data?.message);

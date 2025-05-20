@@ -44,7 +44,11 @@ class ChatController {
         throw ApiError.BadRequest("Неверное значение skip");
       }
 
-      const messages = await ChatService.getMessages(chatId, parsedLimit, parsedSkip);
+      const messages = await ChatService.getMessages(
+        chatId,
+        parsedLimit,
+        parsedSkip,
+      );
       res.json(messages);
     } catch (error) {
       console.error(

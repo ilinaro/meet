@@ -5,7 +5,7 @@ import {
   selectUserContact,
   useSetUserContact,
 } from "../../../store/userContactStateSlice";
-import dayjs from "dayjs";
+// import dayjs from "dayjs";
 import styles from "../Profile.module.scss";
 
 export const UserProfile: React.FC = () => {
@@ -33,17 +33,18 @@ export const UserProfile: React.FC = () => {
       </Text>
       <br />
       <Text size={25} fw={400} color="violet">
-        {userContact?.isOnline ? "В сети" : "Не в сети"}
-      </Text>
-      <br />
-      <Text size={25} fw={400}>Был{" "}
-        {userContact?.lastSeen ?
-          dayjs(userContact?.lastSeen).format('DD.MM.YYYY HH:mm')
-          : "очень давно"}
+        {/* {userContact?.isOnline ? "В сети" : "Не в сети"} */}
       </Text>
       <br />
       <Text size={25} fw={400}>
-        Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"}
+        Был{" "}
+        {/* {userContact?.lastSeen
+          ? dayjs(userContact?.lastSeen).format("DD.MM.YYYY HH:mm")
+          : "очень давно"} */}
+      </Text>
+      <br />
+      <Text size={25} fw={400}>
+        {/* Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"} */}
       </Text>
       <br />
       {userContact?.isInContacts ? (

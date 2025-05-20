@@ -35,8 +35,14 @@ router.get(
   Routers.CHAT_MESSAGES,
   authMiddleware,
   query("chatId").notEmpty().withMessage("Не указан chatId"),
-  query("limit").optional().isInt({ min: 1 }).withMessage("Limit должен быть целым числом >= 1"), // Валидация limit
-  query("skip").optional().isInt({ min: 0 }).withMessage("Skip должен быть целым числом >= 0"), // Валидация skip
+  query("limit")
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage("Limit должен быть целым числом >= 1"), // Валидация limit
+  query("skip")
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("Skip должен быть целым числом >= 0"), // Валидация skip
   chatController.getMessages,
 );
 

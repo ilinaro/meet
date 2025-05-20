@@ -1,6 +1,6 @@
 import { AxiosResponse } from "axios";
 import $api from "../http";
-import { AuthResponse, IUser } from "../models";
+import { AuthResponse, IContact } from "../models";
 
 export default class ChatService {
   static async startChat(
@@ -13,8 +13,8 @@ export default class ChatService {
     return $api.post<AuthResponse>("/chat/add-contact", req);
   }
 
-  static async contacts(): Promise<AxiosResponse<IUser[]>> {
-    return $api.get<IUser[]>("/chat/contacts");
+  static async contacts(): Promise<AxiosResponse<IContact[]>> {
+    return $api.get<IContact[]>("/chat/contacts");
   }
 
   static async deleteChat(id: string) {
