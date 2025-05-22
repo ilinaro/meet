@@ -56,7 +56,7 @@ export class SocketService {
       return;
     }
     console.log(
-      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`
+      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`,
     );
     this.socket.emit("joinChat", { targetUserId, chatId });
   }

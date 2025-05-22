@@ -15,6 +15,9 @@ const userStateSlice = createSlice({
   name: "userMain",
   initialState,
   reducers: {
+    resetUserMainState() {
+      return initialState
+    },
     setUserMain(state: UserState, action: PayloadAction<IUser | undefined>) {
       state.userMain = action.payload;
     },
@@ -34,4 +37,4 @@ export const useSetUserMain = () => {
 };
 
 export default userStateSlice.reducer;
-export const { setUserMain } = userStateSlice.actions;
+export const { setUserMain, resetUserMainState } = userStateSlice.actions;

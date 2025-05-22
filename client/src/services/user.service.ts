@@ -7,7 +7,9 @@ export default class UserService {
     return $api.get<IUser>("/user");
   }
 
-  static async searchUsers(nickname: string): Promise<AxiosResponse<IContact[]>> {
+  static async searchUsers(
+    nickname: string,
+  ): Promise<AxiosResponse<IContact[]>> {
     return $api.get<IContact[]>("/search-users", {
       params: { nickname },
     });

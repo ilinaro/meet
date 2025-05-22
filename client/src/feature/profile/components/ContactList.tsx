@@ -17,11 +17,11 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
   const setUserContact = useSetUserContact();
   const userContact = useAppSelector(selectUserContact);
 
-  const isListNoEmpty = contactsData && contactsData.length > 0
+  const isListNoEmpty = contactsData && contactsData.length > 0;
 
   return (
     <div className={styles.searchResults}>
-      { isListNoEmpty &&
+      {isListNoEmpty &&
         contactsData.map((contact) => (
           <div
             key={contact._id}

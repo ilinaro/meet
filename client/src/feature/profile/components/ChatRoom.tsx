@@ -132,7 +132,9 @@ export const ChatRoom: React.FC = () => {
                         : styles.timestampReceived,
                     )}
                   >
-                    <Text size={14}>{dayjs(msg.timestamp).format("HH:mm")}</Text>
+                    <Text size={14}>
+                      {dayjs(msg.timestamp).format("HH:mm")}
+                    </Text>
                   </div>
                 )}
               </div>

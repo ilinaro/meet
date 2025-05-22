@@ -10,13 +10,16 @@ const authStateSlice = createSlice({
   name: "authState",
   initialState,
   reducers: {
+    resetAuthState(state) {
+      state.isLogin = false;
+    },
     toggleAuthState(
       state: { isLogin: boolean | undefined },
       action: {
         payload: {
           isLogin: boolean | undefined;
         };
-      },
+      }
     ) {
       state.isLogin = action.payload.isLogin;
     },
@@ -24,4 +27,4 @@ const authStateSlice = createSlice({
 });
 
 export default authStateSlice.reducer;
-export const { toggleAuthState } = authStateSlice.actions;
+export const { toggleAuthState, resetAuthState } = authStateSlice.actions;

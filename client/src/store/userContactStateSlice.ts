@@ -17,8 +17,14 @@ const userStateSlice = createSlice({
   name: "userContact",
   initialState,
   reducers: {
-    setUserContact(state: UserState, action: PayloadAction<IContact | undefined>) {
+    setUserContact(
+      state: UserState,
+      action: PayloadAction<IContact | undefined>
+    ) {
       state.userContact = action.payload;
+    },
+    resetUserContactState() {
+      return initialState;
     },
     toggleInfo(state: UserState, action: PayloadAction<boolean>) {
       state.isInfoExpanded = action.payload;
@@ -50,4 +56,4 @@ export const useToggleInfo = () => {
 };
 
 export default userStateSlice.reducer;
-export const { setUserContact, toggleInfo } = userStateSlice.actions;
+export const { setUserContact, toggleInfo, resetUserContactState } = userStateSlice.actions;

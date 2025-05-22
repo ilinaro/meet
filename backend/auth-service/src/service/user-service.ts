@@ -22,7 +22,7 @@ class UserService {
   private createUserDto(
     user: User,
     currentUserId?: string,
-    status?: { isOnline: boolean; lastSeen: Date | null }
+    status?: { isOnline: boolean; lastSeen: Date | null },
   ): DtoService {
     const userDtoObject = {
       _id: user._id.toString(),
@@ -42,7 +42,7 @@ class UserService {
   }
 
   async getUserStatuses(
-    userIds: string[]
+    userIds: string[],
   ): Promise<{ [key: string]: { isOnline: boolean; lastSeen: Date | null } }> {
     const statuses = await UserStatusModel.find({
       userId: { $in: userIds },
@@ -83,7 +83,7 @@ class UserService {
 
     await MailService.sendActivationMail(
       email,
-      `${process.env.API_URL}/api/active/${activationLink}`
+      `${process.env.API_URL}/api/active/${activationLink}`,
     );
     const userDto = this.createUserDto(user);
     const tokens = TokenService.generateTokens({ ...userDto });
@@ -150,58 +150,57 @@ class UserService {
     const userIds = users.map((user) => user._id.toString());
     const statuses = await this.getUserStatuses(userIds);
     return users.map((user) =>
-      this.createUserDto(user, undefined, statuses[user._id.toString()])
+      this.createUserDto(user, undefined, statuses[user._id.toString()]),
     );
   }
 
   async searchUsers(nickname: string, currentUserId?: string) {
     const limit = 50;
-    
+
     // Используем $text индекс, если он доступен, иначе используем regex
     // Примечание: необходимо создать индекс в MongoDB: db.users.createIndex({ nickname: "text" })
     const query = {
       nickname: { $regex: nickname, $options: "i" },
-      ...(currentUserId ? { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } } : {})
+      ...(currentUserId
+        ? { _id: { $ne: new mongoose.Types.ObjectId(currentUserId) } }
+        : {}),
     };
-    
+
     const [users, contacts] = await Promise.all([
-      UserModel.find(query)
-        .select("nickname _id")
-        .limit(limit),
-      
-      currentUserId ? 
-        ContactModel.find({ userId: currentUserId })
-          .select("contactId")
-        : Promise.resolve([])
+      UserModel.find(query).select("nickname _id").limit(limit),
+
+      currentUserId
+        ? ContactModel.find({ userId: currentUserId }).select("contactId")
+        : Promise.resolve([]),
     ]);
-    
+
     if (contacts.length === 0) {
-      return users.map(user => ({
+      return users.map((user) => ({
         _id: user._id,
         nickname: user.nickname,
         isInContacts: false,
-        chatId: null
+        chatId: null,
       }));
     }
-    
+
     const contactIdsSet = new Set(
-      contacts.map(contact => contact.contactId.toString())
+      contacts.map((contact) => contact.contactId.toString()),
     );
-    
-    return users.map(user => {
+
+    return users.map((user) => {
       const userId = user._id.toString();
       return {
         _id: user._id,
         nickname: user.nickname,
         isInContacts: contactIdsSet.has(userId),
-        chatId: null
+        chatId: null,
       };
     });
   }
 
   async updateUser(
     userId: string,
-    updates: { nickname?: string; allowChatInvites?: boolean }
+    updates: { nickname?: string; allowChatInvites?: boolean },
   ) {
     const user = await UserModel.findById(userId);
     if (!user) {

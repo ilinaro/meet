@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../routers/routeNames";
 import { useHadlerError } from "../useHadlerError";
 import { AxiosResponse } from "axios";
-import { useSetUserContact } from "../../store/userContactStateSlice";
-import { useSetUserMain } from "../../store/userMainStateSlice";
+import { queryClient } from "../../main";
+import { resetAuthAndUser } from "../../store";
 
 export const useSignupQuery = () => {
   const dispatch = useAppDispatch();
@@ -21,7 +21,8 @@ export const useSignupQuery = () => {
       navigate(RouteNames.PROFILE);
     },
     onError: (error: any) => {
-      useHadlerError(error?.response?.data?.message);
+      const message = error?.response?.data?.message || "Ошибка входа в систему";
+      useHadlerError(message);
       dispatch(toggleAuthState({ isLogin: false }));
     },
   });
@@ -32,13 +33,14 @@ export const useLoginQuery = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (data: LoginData) => AuthService.login(data),
+    mutationFn: async (data: LoginData) => await AuthService.login(data),
     onSuccess: () => {
       dispatch(toggleAuthState({ isLogin: true }));
       navigate(RouteNames.PROFILE);
     },
     onError: (error: any) => {
-      useHadlerError(error?.response?.data?.message);
+      const message = error?.response?.data?.message || "Ошибка входа в систему";
+      useHadlerError(message);
       dispatch(toggleAuthState({ isLogin: false }));
     },
   });
@@ -47,16 +49,19 @@ export const useLoginQuery = () => {
 export const useLogoutQuery = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const setUserContact = useSetUserContact();
-  const setUserMain = useSetUserMain();
+
   return useMutation({
-    mutationFn: () => AuthService.logout(),
-    onSettled: () => {
-      localStorage.removeItem("token");
-      dispatch(toggleAuthState({ isLogin: false }));
-      setUserMain(undefined);
-      setUserContact(undefined);
-      navigate(RouteNames.START);
+    mutationFn: async () => {
+      try {
+        await AuthService.logout();
+      } catch (error) {
+        console.error("Logout failed", error);
+      } finally {
+        queryClient.clear();
+        localStorage.clear();
+        dispatch(resetAuthAndUser());
+        navigate(RouteNames.START);
+      }
     },
   });
 };
@@ -64,7 +69,7 @@ export const useLogoutQuery = () => {
 export const useCheckAuthQuery = () => {
   const dispatch = useAppDispatch();
   return useMutation({
-    mutationFn: () => AuthService.checkAuth(),
+    mutationFn: async () => await AuthService.checkAuth(),
     onSuccess: (response: AxiosResponse<AuthResponse>) => {
       localStorage.setItem("token", response.data.accessToken);
       dispatch(toggleAuthState({ isLogin: true }));
