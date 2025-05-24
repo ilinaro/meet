@@ -6,6 +6,7 @@ import styles from "./Profile.module.scss";
 
 export const Profile: React.FC = () => {
   const userContact = useAppSelector(selectUserContact);
+
   return (
     <div className={styles.content}>
       <SideBar />

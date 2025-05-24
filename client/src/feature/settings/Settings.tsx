@@ -1,13 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { Button, Text } from "./../../components";
-import styles from "./Settings.module.scss";
 import { RouteNames } from "../../routers/routeNames";
-import { useGetUserQuery } from "../../lib/UserQuery";
 import { useLogoutQuery } from "../../lib";
+import styles from "./Settings.module.scss";
+import { useAppSelector } from "../../store/useAppSelect";
+import { selectUserMain } from "../../store/userMainStateSlice";
 
 export const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { data: userData } = useGetUserQuery();
+  const userMain = useAppSelector(selectUserMain);
   const { mutate: logout, isPending: isLoggingOut } = useLogoutQuery();
   const handleLogout = () => {
     logout();
@@ -18,11 +19,11 @@ export const Settings: React.FC = () => {
       <div className={styles.headSettings}>
         <div
           onClick={() => navigate(RouteNames.PROFILE)}
-          className={styles.back}
+           className={styles.back}
         >
           <Text>Назад</Text>
         </div>
-        {!userData?.isActivated && (
+        {!userMain?.isActivated && (
           <div className={styles.warnEmail}>
             <Text size={25} fw={600} color={"white-general"}>
               Пожалуйста, подтвердите ваш email
@@ -41,3 +42,4 @@ export const Settings: React.FC = () => {
     </div>
   );
 };
+ 

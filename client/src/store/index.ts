@@ -1,6 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authStateReducer, { resetAuthState } from "./authStateSlice";
-import userContactReducer, { resetUserContactState } from "./userContactStateSlice";
+import userContactReducer, {
+  resetUserContactState,
+} from "./userContactStateSlice";
 import userMainStateReducer, { resetUserMainState } from "./userMainStateSlice";
 import deviceTypeReducer from "./deviceTypeSlice";
 
@@ -12,7 +14,6 @@ const store = configureStore({
     isMobile: deviceTypeReducer,
   },
 });
-
 
 export const resetAuthAndUser = () => (dispatch: AppDispatch) => {
   dispatch(resetAuthState());

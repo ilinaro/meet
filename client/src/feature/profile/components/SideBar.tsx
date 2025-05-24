@@ -1,13 +1,25 @@
 import styles from "../Profile.module.scss";
 import { useGetContacts } from "../../../lib/ChatQuery";
 import { ContactList, UserInfo } from "./";
-import { useSearchUsersQuery } from "../../../lib/UserQuery";
+import { useGetUserQuery, useSearchUsersQuery } from "../../../lib/UserQuery";
 import { useDebounce } from "../../../hook";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Text, Input } from "../../../components";
-import { SearchList } from ".";
+import { SearchList } from "."
+import { useSetUserMain } from "../../../store/userMainStateSlice";
 
 export const SideBar: React.FC = () => {
+
+  const setUserMain = useSetUserMain();
+
+  const { data, isSuccess } = useGetUserQuery()
+
+  useEffect(() => {
+    if (data && isSuccess) {
+      setUserMain(data)
+    }
+  }, [isSuccess])
+
   const [searchTerm, setSearchTerm] = useState<string>("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -25,8 +37,8 @@ export const SideBar: React.FC = () => {
       <div className={styles.header}>
         <Text size={14} color="border">
           {(debouncedSearchTerm && debouncedSearchTerm.length >= 2) ||
-          isLoading ||
-          (searchData && searchData.length)
+            isLoading ||
+            (searchData && searchData.length)
             ? "Поиск"
             : "Контакты"}
         </Text>

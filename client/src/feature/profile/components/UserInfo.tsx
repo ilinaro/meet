@@ -1,21 +1,14 @@
 import { Text } from "../../../components";
-import { useGetUserQuery } from "../../../lib/UserQuery";
 import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../../routers/routeNames";
 import styles from "../Profile.module.scss";
-import { useEffect } from "react";
-import { useSetUserMain } from "../../../store/userMainStateSlice";
+
+import { selectUserMain } from "../../../store/userMainStateSlice";
+import { useAppSelector } from "../../../store/useAppSelect";
 
 export const UserInfo: React.FC = () => {
   const navigate = useNavigate();
-  const setUserMain = useSetUserMain();
-  const { data: userMain } = useGetUserQuery();
-
-  useEffect(() => {
-    if (userMain) {
-      setUserMain(userMain);
-    }
-  }, [userMain]);
+  const userMain = useAppSelector(selectUserMain);
 
   return (
     <div

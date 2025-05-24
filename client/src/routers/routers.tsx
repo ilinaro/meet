@@ -24,7 +24,7 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const isExcludePath = authPath.includes(location.pathname as RouteNames);
 
   if (isLogin === undefined) {
-    return <div>Проверка авторизации...</div>;
+    return <></>;
   }
 
   if (isLogin && isExcludePath) {
@@ -44,10 +44,6 @@ type PublicRouteProps = {
 
 export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { isLogin } = useAppSelector((state) => state.authState);
-
-  if (isLogin === undefined) {
-    return;
-  }
 
   if (isLogin) {
     return <Navigate to={RouteNames.PROFILE} replace />;

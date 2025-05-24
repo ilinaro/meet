@@ -30,10 +30,9 @@ class UserService {
       isActivated: user.isActivated,
       nickname: user.nickname,
       allowChatInvites: user.allowChatInvites,
-      isInContacts: false, // По умолчанию false, переопределяется в searchUsers
+      isInContacts: false,
     };
     const userDto = new DtoService(userDtoObject);
-    // Добавляем isOnline и lastSeen после создания
     Object.assign(userDto, {
       isOnline: status ? status.isOnline : false,
       lastSeen: status && !status.isOnline ? status.lastSeen : null,
@@ -157,8 +156,6 @@ class UserService {
   async searchUsers(nickname: string, currentUserId?: string) {
     const limit = 50;
 
-    // Используем $text индекс, если он доступен, иначе используем regex
-    // Примечание: необходимо создать индекс в MongoDB: db.users.createIndex({ nickname: "text" })
     const query = {
       nickname: { $regex: nickname, $options: "i" },
       ...(currentUserId

@@ -1,28 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Routers } from "./routers/routers";
 import { useDeviceTypeIdentifier } from "./lib/useDeviceTypeIdentifier";
-import { useAppDispatch } from "./store/useAppDispatch";
-import { useAppSelector } from "./store/useAppSelect";
-import { toggleAuthState } from "./store/authStateSlice";
+import { useCheckAuthQuery } from "./lib";
+import { getToken } from "./services/token.service";
+import { handleRefreshFailure } from "./http";
 
 export const App: React.FC = () => {
-  const accessToken = localStorage.getItem("token");
-  const dispatch = useAppDispatch();
-  const { isLogin } = useAppSelector((state) => state.authState);
-
   useDeviceTypeIdentifier();
+  const { mutate } = useCheckAuthQuery();
+  const { token } = getToken();
+  const authRef = useRef(false);
 
   useEffect(() => {
-    if (accessToken) {
-      dispatch(toggleAuthState({ isLogin: true }));
-    } else {
-      dispatch(toggleAuthState({ isLogin: false }));
+    if (token && !authRef.current) {
+      mutate();
+      authRef.current = true;
+    }
+    if (!token) {
+      handleRefreshFailure()
     }
   }, []);
-
-  if (isLogin === undefined) {
-    return <></>;
-  }
 
   return <Routers />;
 };

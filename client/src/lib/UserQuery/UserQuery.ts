@@ -1,14 +1,20 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import UserService from "../../services/user.service";
 import { IContact } from "../../models";
+import { useAppSelector } from "../../store/useAppSelect";
+import { selectUserMain } from "../../store/userMainStateSlice";
 
 export const useGetUserQuery = () => {
+  const { isLogin } = useAppSelector((state) => state.authState);
+  const userMain = useAppSelector(selectUserMain);
   return useQuery({
     queryKey: ["userData"],
     queryFn: async () => {
       const { data } = await UserService.getUser();
       return data;
     },
+    enabled: !userMain && isLogin,
+    retry: 1,
   });
 };
 

@@ -19,7 +19,7 @@ const authStateSlice = createSlice({
         payload: {
           isLogin: boolean | undefined;
         };
-      }
+      },
     ) {
       state.isLogin = action.payload.isLogin;
     },
