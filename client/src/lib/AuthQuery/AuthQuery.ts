@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 import { RouteNames } from "../../routers/routeNames";
 import { useHadlerError } from "../useHadlerError";
 import { AxiosResponse } from "axios";
-import { setToken } from "../../services/token.service";
 import { handleRefreshFailure } from "../../http";
 import { queryClient } from "../../main";
+import { setAccessToken } from "../../store/accessStateSlice";
 
 export const useSignupQuery = () => {
   const dispatch = useAppDispatch();
@@ -19,11 +19,11 @@ export const useSignupQuery = () => {
     mutationFn: (data: RegisterData) => AuthService.registration(data),
     onSuccess: (response: AxiosResponse<AuthResponse>) => {
       if (response.data.accessToken) {
-        setToken(response.data.accessToken);
+        dispatch(setAccessToken({ accessToken: response.data.accessToken }));
       }
       dispatch(toggleAuthState({ isLogin: true }));
       navigate(RouteNames.PROFILE);
-    }, 
+    },
     onError: (error: any) => {
       const message = error?.response?.data?.message || "Ошибка регистрации";
       useHadlerError(message);
@@ -40,7 +40,7 @@ export const useLoginQuery = () => {
     mutationFn: async (data: LoginData) => await AuthService.login(data),
     onSuccess: (response: AxiosResponse<AuthResponse>) => {
       if (response.data.accessToken) {
-        setToken(response.data.accessToken);
+        dispatch(setAccessToken({ accessToken: response.data.accessToken }));
       }
       dispatch(toggleAuthState({ isLogin: true }));
       navigate(RouteNames.PROFILE);
@@ -80,7 +80,7 @@ export const useCheckAuthQuery = () => {
     mutationFn: async () => await AuthService.checkAuth(),
     onSuccess: (response: AxiosResponse<AuthResponse>) => {
       dispatch(toggleAuthState({ isLogin: true }));
-      setToken(response.data.accessToken);
+      dispatch(setAccessToken({ accessToken: response.data.accessToken }));
     },
     onError: () => {
       handleRefreshFailure();

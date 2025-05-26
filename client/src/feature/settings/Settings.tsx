@@ -19,7 +19,7 @@ export const Settings: React.FC = () => {
       <div className={styles.headSettings}>
         <div
           onClick={() => navigate(RouteNames.PROFILE)}
-           className={styles.back}
+          className={styles.back}
         >
           <Text>Назад</Text>
         </div>
@@ -42,4 +42,3 @@ export const Settings: React.FC = () => {
     </div>
   );
 };
- 

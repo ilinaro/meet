@@ -1,5 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import { WS_URL } from "../http";
+import { selectAccessToken } from "../store/accessStateSlice";
+import store from "../store";
 
 interface MessageData {
   senderId: string;
@@ -16,7 +18,7 @@ export class SocketService {
 
   connect(userId: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const token = localStorage.getItem("token");
+      const token = selectAccessToken(store.getState());
       if (!token) {
         console.error("SocketService: Токен не найден");
         reject("Нет токена");
@@ -56,7 +58,7 @@ export class SocketService {
       return;
     }
     console.log(
-      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`,
+      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`
     );
     this.socket.emit("joinChat", { targetUserId, chatId });
   }

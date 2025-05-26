@@ -1,11 +1,11 @@
 import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
-import { getToken, removeToken, setToken } from "../services/token.service";
 import { AuthResponse } from "../models";
 import { queryClient } from "../main";
 import store, { resetAuthAndUser } from "../store";
+import { setAccessToken, selectAccessToken } from "../store/accessStateSlice"; 
 
-export const WS_URL = import.meta.env.VITE_WS_URL || "http://localhost:4001"; // Добавлена проверка переменной окружения для WS_URL
-export const API_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api`; // Добавлена заглушка для VITE_API_URL
+export const WS_URL = import.meta.env.VITE_WS_URL;
+export const API_URL = import.meta.env.VITE_API_URL;
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -26,7 +26,6 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 export const handleRefreshFailure = () => {
-  removeToken();
   queryClient.invalidateQueries({ queryKey: ["checkAuth", "userMain"] });
   store.dispatch(resetAuthAndUser());
 };
@@ -34,11 +33,11 @@ export const handleRefreshFailure = () => {
 const $api = axios.create({
   withCredentials: true,
   baseURL: API_URL,
-  timeout: 10000, // Добавлен таймаут для всех запросов (10 секунд)
+  timeout: 10000,
 });
 
 $api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const { token } = getToken();
+  const token = selectAccessToken(store.getState());
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -86,7 +85,7 @@ $api.interceptors.response.use(
           throw new Error("Invalid or missing accessToken in refresh response");
         }
 
-        setToken(accessToken);
+        store.dispatch(setAccessToken({ accessToken }));
         processQueue(null, accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -94,12 +93,13 @@ $api.interceptors.response.use(
       } catch (e) {
         processQueue(e, null);
 
-        // Улучшена проверка ошибки без приведения к any
         if (axios.isAxiosError(e) && e.response?.status === 401) {
-          // Изменено логирование для минимизации утечек информации
+          
           console.warn("Refresh token is invalid, clearing auth state");
-          handleRefreshFailure();
-          return Promise.reject(new Error("Unauthorized: Invalid refresh token"));
+          await handleRefreshFailure();
+          return Promise.reject(
+            new Error("Unauthorized: Invalid refresh token")
+          );
         }
 
         // Изменено логирование для большей безопасности
