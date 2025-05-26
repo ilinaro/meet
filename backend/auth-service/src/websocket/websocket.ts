@@ -2,8 +2,11 @@ import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import tokenService from "../service/token-service";
 import { logger } from "../utils/logger";
-import ChatService from "../service/chat-service"; // Добавлено для сохранения сообщений
-import UserStatusModel from "../models/user-status-model"; // Добавлено для статуса пользователей
+import ChatService from "../service/chat-service";
+import UserStatusModel from "../models/user-status-model";
+import ChatModel from "../models/chat-model";
+import WebSocketService  from "../service/websocket-service";
+
 
 interface AuthSocket extends Socket {
   user?: { _id: string };
@@ -18,6 +21,9 @@ export const initWebSocket = (httpServer: HttpServer) => {
     },
     path: "/socket.io",
   });
+
+  // Инициализируем WebSocketService
+  WebSocketService.initialize(io);
 
   io.use(async (socket: AuthSocket, next) => {
     try {
@@ -48,13 +54,14 @@ export const initWebSocket = (httpServer: HttpServer) => {
       `WebSocket: Пользователь ${socket.user._id} подключился, socket ID: ${socket.id}`,
     );
 
-    // Обновление статуса пользователя при подключении
+    socket.join(socket.user._id);
+
     UserStatusModel.findOneAndUpdate(
       { userId: socket.user._id },
       { isOnline: true, lastSeen: null },
       { upsert: true, new: true },
     ).catch((error) => logger.error("Ошибка обновления статуса:", error));
-    io.emit("userStatus", { userId: socket.user._id, isOnline: true }); // Рассылка статуса
+    io.emit("userStatus", { userId: socket.user._id, isOnline: true });
 
     socket.on("joinChat", ({ targetUserId, chatId }) => {
       if (!targetUserId || !chatId) {
@@ -83,17 +90,33 @@ export const initWebSocket = (httpServer: HttpServer) => {
       );
 
       try {
-        // Сохранение сообщения в базу данных
         const message = await ChatService.saveMessage(
           chatId,
           socket.user!._id,
           content,
         );
 
+        const chat = await ChatModel.findById(chatId);
+        if (chat) {
+          const recipientId = chat.participants.find(
+            (p) => p.toString() !== socket.user!._id,
+          )?.toString();
+          if (recipientId) {
+            // Используем WebSocketService для уведомления
+            WebSocketService.sendNotification(recipientId, {
+              type: "message",
+              senderId: socket.user!._id,
+              chatId,
+              content,
+              timestamp: message.createdAt.toISOString(),
+            });
+          }
+        }
+
         io.to(chatId).emit("message", {
           senderId: socket.user!._id,
           content,
-          timestamp: message.createdAt.toISOString(), // Используем время из базы
+          timestamp: message.createdAt.toISOString(),
         });
         logger.info(
           `WebSocket: Рассылка сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`,
@@ -126,7 +149,6 @@ export const initWebSocket = (httpServer: HttpServer) => {
     socket.on("disconnect", () => {
       logger.info(`WebSocket: Пользователь ${socket.user!._id} отключился`);
 
-      // Обновление статуса при отключении
       UserStatusModel.findOneAndUpdate(
         { userId: socket.user!._id },
         { isOnline: false, lastSeen: new Date() },
@@ -136,7 +158,7 @@ export const initWebSocket = (httpServer: HttpServer) => {
         userId: socket.user!._id,
         isOnline: false,
         lastSeen: new Date().toISOString(),
-      }); // Рассылка статуса
+      });
     });
   });
 

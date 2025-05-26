@@ -7,6 +7,13 @@ interface MessageData {
   senderId: string;
   content: string;
   timestamp: string;
+  chatId: string;
+}
+
+interface ContactData {
+  senderId: string;
+  chatId: string;
+  timestamp: string;
 }
 
 interface ErrorData {
@@ -52,24 +59,25 @@ export class SocketService {
     this.socket?.on("connect", callback);
   }
 
+  offConnect(callback: () => void): void {
+    this.socket?.off("connect", callback);
+  }
+
   joinChat(targetUserId: string, chatId: string): void {
     if (!this.socket || !this.isConnected()) {
       console.error("SocketService: Сокет не подключен");
       return;
     }
-    console.log(
-      `SocketService: Присоединение к чату с targetUserId=${targetUserId}, chatId=${chatId}`
-    );
+    console.log(`SocketService: Присоединение к чату ${chatId}`);
     this.socket.emit("joinChat", { targetUserId, chatId });
   }
 
   onChatJoined(callback: (data: { chatId: string }) => void): void {
-    if (this.socket) {
-      this.socket.on("chatJoined", (data) => {
-        console.log("SocketService: Присоединились к чату:", data);
-        callback(data);
-      });
-    }
+    this.socket?.on("chatJoined", callback);
+  }
+
+  offChatJoined(callback: (data: { chatId: string }) => void): void {
+    this.socket?.off("chatJoined", callback);
   }
 
   sendMessage(chatId: string, content: string): void {
@@ -82,30 +90,37 @@ export class SocketService {
   }
 
   onMessage(callback: (data: MessageData) => void): void {
-    if (this.socket) {
-      this.socket.on("message", (data) => {
-        console.log("SocketService: Получено сообщение:", data);
-        callback(data);
-      });
-    }
+    this.socket?.on("message", callback);
   }
 
-  onTestMessage(callback: (data: MessageData) => void): void {
-    if (this.socket) {
-      this.socket.on("testMessage", (data) => {
-        console.log("SocketService: Получено тестовое сообщение:", data);
-        callback(data);
-      });
-    }
+  offMessage(callback: (data: MessageData) => void): void {
+    this.socket?.off("message", callback);
+  }
+
+  onTestMessage1(callback: (data: MessageData) => void): void {
+    this.socket?.on("newContactOrMessage", ({ type, senderId, chatId, content, timestamp }) => {
+      if (type === "message") {
+        console.log(`SocketService: Новое сообщение от ${senderId}: ${content}`);
+        callback({ senderId, content, timestamp, chatId });
+      }
+    });
+  }
+
+  onNewContact(callback: (data: ContactData) => void): void {
+    this.socket?.on("newContactOrMessage", ({ type, senderId, chatId, timestamp }) => {
+      if (type === "contact") {
+        console.log(`SocketService: Тебя добавили в контакты: ${senderId}`);
+        callback({ senderId, chatId, timestamp });
+      }
+    });
   }
 
   onError(callback: (data: ErrorData) => void): void {
-    if (this.socket) {
-      this.socket.on("error", (data) => {
-        console.log("SocketService: Получена ошибка:", data);
-        callback(data);
-      });
-    }
+    this.socket?.on("error", callback);
+  }
+
+  offError(callback: (data: ErrorData) => void): void {
+    this.socket?.off("error", callback);
   }
 
   disconnect(): void {

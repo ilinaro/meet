@@ -21,36 +21,36 @@ export const ChatRoom: React.FC = () => {
   const userContact = useAppSelector(selectUserContact);
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isSocketReady, setIsSocketReady] = useState(false);
+  const [isSocketReady, setIsSocketReady] = useState(SocketService.isConnected());
   const inputRef = useRef<HTMLInputElement>(null);
-  const outputRef = useRef<boolean>(null);
+  const outputRef = useRef<boolean>(false);
   const hasJoinedRef = useRef(false);
   const { mutate: addUser } = useAddChatQuery();
 
   useEffect(() => {
     if (userMain?._id) {
-      if (!SocketService.isConnected()) {
-        SocketService.connect(userMain._id);
-      }
+      const handleMessage = (message: Message) => {
+        console.log("ChatRoom: Получено сообщение:", message); // Лог для отладки
+        setMessages((prev) => [...prev, message]);
+      };
+
+      const handleError = ({ message }: { message: string }) => {
+        console.error("ChatRoom: Ошибка сокета:", message);
+      };
 
       const handleConnect = () => {
         console.log("ChatRoom: Сокет подключен");
         setIsSocketReady(true);
       };
 
+      SocketService.onMessage(handleMessage);
+      SocketService.onError(handleError);
       SocketService.onConnect(handleConnect);
 
-      SocketService.onMessage((message) => {
-        setMessages((prev) => [...prev, message]);
-      });
-
-      SocketService.onError(({ message }) => {
-        console.error("ChatRoom: Ошибка сокета:", message);
-      });
-
       return () => {
-        SocketService.disconnect();
-        setIsSocketReady(false);
+        SocketService.offMessage(handleMessage); // Очищаем обработчик
+        SocketService.offError(handleError);
+        SocketService.offConnect(handleConnect);
         hasJoinedRef.current = false;
       };
     }
@@ -60,7 +60,7 @@ export const ChatRoom: React.FC = () => {
     if (userContact && !userContact?.isInContacts && outputRef.current) {
       addUser(userContact._id);
     }
-  }, [userContact?._id && outputRef.current]);
+  }, [userContact?._id, outputRef.current]);
 
   useEffect(() => {
     hasJoinedRef.current = false;

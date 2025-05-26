@@ -2,7 +2,7 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { AuthResponse } from "../models";
 import { queryClient } from "../main";
 import store, { resetAuthAndUser } from "../store";
-import { setAccessToken, selectAccessToken } from "../store/accessStateSlice"; 
+import { setAccessToken, selectAccessToken } from "../store/accessStateSlice";
 
 export const WS_URL = import.meta.env.VITE_WS_URL;
 export const API_URL = import.meta.env.VITE_API_URL;
@@ -26,7 +26,7 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 export const handleRefreshFailure = () => {
-  queryClient.invalidateQueries({ queryKey: ["checkAuth", "userMain"] });
+  queryClient.invalidateQueries({ queryKey: ["checkAuth", "userMain", "userContact"] });
   store.dispatch(resetAuthAndUser());
 };
 
@@ -73,13 +73,11 @@ $api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Добавлен таймаут для запроса на обновление токена
         const response = await axios.get<AuthResponse>(`${API_URL}/refresh`, {
           withCredentials: true,
-          timeout: 5000, // Таймаут 5 секунд для запроса обновления
+          timeout: 5000,
         });
 
-        // Добавлена проверка наличия accessToken
         const { accessToken } = response.data;
         if (!accessToken || typeof accessToken !== "string") {
           throw new Error("Invalid or missing accessToken in refresh response");
@@ -94,15 +92,13 @@ $api.interceptors.response.use(
         processQueue(e, null);
 
         if (axios.isAxiosError(e) && e.response?.status === 401) {
-          
           console.warn("Refresh token is invalid, clearing auth state");
           await handleRefreshFailure();
           return Promise.reject(
-            new Error("Unauthorized: Invalid refresh token")
+            new Error("Unauthorized: Invalid refresh token"),
           );
         }
 
-        // Изменено логирование для большей безопасности
         console.warn("Failed to refresh token");
         return Promise.reject(e);
       } finally {
@@ -111,7 +107,7 @@ $api.interceptors.response.use(
     }
 
     throw error;
-  }
+  },
 );
 
 export default $api;
