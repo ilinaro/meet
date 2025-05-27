@@ -34,7 +34,11 @@ export class ContactService {
     // Создаём записи для обоих пользователей
     const [contact, reverseContact] = await Promise.all([
       ContactModel.create({ userId, contactId, chatId: chat._id }),
-      ContactModel.create({ userId: contactId, contactId: userId, chatId: chat._id }),
+      ContactModel.create({
+        userId: contactId,
+        contactId: userId,
+        chatId: chat._id,
+      }),
     ]);
 
     // Отправляем уведомление через WebSocketService

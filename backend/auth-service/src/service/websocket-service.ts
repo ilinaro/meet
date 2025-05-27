@@ -38,7 +38,9 @@ export class WebSocketService {
       return;
     }
     this.io.to(userId).emit("newContactOrMessage", notification);
-    logger.info(`WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`);
+    logger.info(
+      `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`,
+    );
   }
 
   isInitialized(): boolean {

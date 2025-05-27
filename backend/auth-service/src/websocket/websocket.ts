@@ -5,8 +5,7 @@ import { logger } from "../utils/logger";
 import ChatService from "../service/chat-service";
 import UserStatusModel from "../models/user-status-model";
 import ChatModel from "../models/chat-model";
-import WebSocketService  from "../service/websocket-service";
-
+import WebSocketService from "../service/websocket-service";
 
 interface AuthSocket extends Socket {
   user?: { _id: string };
@@ -98,9 +97,9 @@ export const initWebSocket = (httpServer: HttpServer) => {
 
         const chat = await ChatModel.findById(chatId);
         if (chat) {
-          const recipientId = chat.participants.find(
-            (p) => p.toString() !== socket.user!._id,
-          )?.toString();
+          const recipientId = chat.participants
+            .find((p) => p.toString() !== socket.user!._id)
+            ?.toString();
           if (recipientId) {
             // Используем WebSocketService для уведомления
             WebSocketService.sendNotification(recipientId, {
@@ -116,6 +115,7 @@ export const initWebSocket = (httpServer: HttpServer) => {
         io.to(chatId).emit("message", {
           senderId: socket.user!._id,
           content,
+          chatId,
           timestamp: message.createdAt.toISOString(),
         });
         logger.info(

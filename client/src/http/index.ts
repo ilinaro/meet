@@ -26,7 +26,9 @@ const processQueue = (error: any, token: string | null = null) => {
 };
 
 export const handleRefreshFailure = () => {
-  queryClient.invalidateQueries({ queryKey: ["checkAuth", "userMain", "userContact"] });
+  queryClient.invalidateQueries({
+    queryKey: ["checkAuth", "userMain", "userContact"],
+  });
   store.dispatch(resetAuthAndUser());
 };
 

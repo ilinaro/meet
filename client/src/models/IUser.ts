@@ -17,3 +17,16 @@ export interface IContact {
   readonly nickname: string;
   readonly _id: string;
 }
+
+export interface MessageData {
+  senderId: string;
+  content: string;
+  timestamp: string;
+  chatId?: string;
+}
+
+export interface ContactData {
+  senderId: string;
+  chatId: string;
+  timestamp: string;
+}

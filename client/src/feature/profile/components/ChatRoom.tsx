@@ -14,6 +14,7 @@ interface Message {
   senderId: string;
   content: string;
   timestamp: string;
+  chatId?: string;
 }
 
 export const ChatRoom: React.FC = () => {
@@ -22,39 +23,39 @@ export const ChatRoom: React.FC = () => {
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isSocketReady, setIsSocketReady] = useState(SocketService.isConnected());
+  const hasJoinedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<boolean>(false);
-  const hasJoinedRef = useRef(false);
+  const prevChatIdRef = useRef<string | null>(null);
   const { mutate: addUser } = useAddChatQuery();
 
   useEffect(() => {
     if (userMain?._id) {
       const handleMessage = (message: Message) => {
-        console.log("ChatRoom: Получено сообщение:", message); // Лог для отладки
-        setMessages((prev) => [...prev, message]);
+        // Фильтруем сообщения по текущей комнате
+        if (message.chatId && message.chatId === userContact?.chatId) {
+          setMessages((prev) => [...prev, message]);
+        }
       };
 
       const handleError = ({ message }: { message: string }) => {
-        console.error("ChatRoom: Ошибка сокета:", message);
+        // console.error("ChatRoom: Ошибка сокета:", message);
       };
 
-      const handleConnect = () => {
-        console.log("ChatRoom: Сокет подключен");
-        setIsSocketReady(true);
-      };
+      const handleConnect = () => setIsSocketReady(true);
 
       SocketService.onMessage(handleMessage);
       SocketService.onError(handleError);
       SocketService.onConnect(handleConnect);
 
       return () => {
-        SocketService.offMessage(handleMessage); // Очищаем обработчик
+        SocketService.offMessage(handleMessage);
         SocketService.offError(handleError);
         SocketService.offConnect(handleConnect);
         hasJoinedRef.current = false;
       };
     }
-  }, [userMain?._id]);
+  }, [userMain?._id, userContact?.chatId]); // Зависимость от chatId
 
   useEffect(() => {
     if (userContact && !userContact?.isInContacts && outputRef.current) {
@@ -74,10 +75,21 @@ export const ChatRoom: React.FC = () => {
       isSocketReady &&
       !hasJoinedRef.current
     ) {
-      console.log("ChatRoom: Присоединяемся к чату", userContact.chatId);
+      if (prevChatIdRef.current && prevChatIdRef.current !== userContact.chatId) {
+        SocketService.leaveChat(prevChatIdRef.current);
+      }
       SocketService.joinChat(userContact._id, userContact.chatId);
       hasJoinedRef.current = true;
+      prevChatIdRef.current = userContact.chatId;
     }
+
+    return () => {
+      if (prevChatIdRef.current) {
+        SocketService.leaveChat(prevChatIdRef.current);
+        prevChatIdRef.current = null;
+      }
+      hasJoinedRef.current = false;
+    };
   }, [userContact?.chatId, userContact?._id, isSocketReady]);
 
   const handleSendMessageAndAddUser = () => {
