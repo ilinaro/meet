@@ -1,11 +1,11 @@
 import { Button, Text } from "../../../components";
 import { useAddChatQuery, useDeleteChatQuery } from "../../../lib/ChatQuery";
+import { IContact } from "../../../models";
 import { useAppSelector } from "../../../store/useAppSelect";
 import {
   selectUserContact,
   useSetUserContact,
 } from "../../../store/userContactStateSlice";
-// import dayjs from "dayjs";
 import styles from "../Profile.module.scss";
 
 export const UserProfile: React.FC = () => {
@@ -20,8 +20,8 @@ export const UserProfile: React.FC = () => {
     }
   };
 
-  const addUserInContacts = (id: string) => {
-    addUser(id);
+  const addUserInContacts = (userContact: IContact) => {
+    addUser({ _id: userContact._id });
   };
 
   if (!userContact) return null;
@@ -51,7 +51,7 @@ export const UserProfile: React.FC = () => {
         <Button onClick={handlerDeleteChat}>Удалить контакт</Button>
       ) : (
         <div className={styles.addedUser}>
-          <Button onClick={() => addUserInContacts(userContact._id)}>
+          <Button onClick={() => addUserInContacts(userContact)}>
             Добавить в контакты
           </Button>
         </div>

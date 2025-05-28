@@ -85,12 +85,59 @@
       border: var(--color-violet) solid 1px;
       height: 40px;
       width: 40px;
+      min-width: 40px;
       margin-right: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 9999px;
       background-color: var(--color-white-general);
+    }
+    .contactInfo {
+      height: 100%;
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      flex-direction: column;
+      .nameContact {
+        padding-top: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 22px;
+        padding-right: 10px;
+        .textName {
+          width: 100%;
+        }
+        .newMessage{
+          min-width: 10px;
+          height: 10px ;
+          width: 10px;
+          border-radius: 9999px;
+          background-color: var(--color-violet);
+        }
+      }
+      .messageContact {
+        display: flex;
+        justify-content: space-between;
+        height: 20px;
+        .textContainer {
+          width: 120px;
+          max-width: 120px;
+          .textMessage {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+      .timeMessage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+      }
     }
     cursor: pointer;
     height: 50px;

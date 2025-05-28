@@ -9,7 +9,7 @@ export default class ChatService {
     return $api.post("/chat/start", { targetUserId });
   }
 
-  static async add(req: { id: string }): Promise<AxiosResponse<AuthResponse>> {
+  static async add(req: { _id: string, nickname?: string }): Promise<AxiosResponse<AuthResponse>> {
     return $api.post<AuthResponse>("/chat/add-contact", req);
   }
 

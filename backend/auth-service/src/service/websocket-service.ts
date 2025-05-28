@@ -3,9 +3,10 @@ import { logger } from "../utils/logger";
 
 interface ContactNotification {
   type: "contact";
-  senderId: string;
+  _id: string;
   chatId: string;
-  timestamp: string;
+  nickname: string;
+  isInContacts: boolean;
 }
 
 interface MessageNotification {
@@ -39,7 +40,7 @@ export class WebSocketService {
     }
     this.io.to(userId).emit("newContactOrMessage", notification);
     logger.info(
-      `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`,
+      `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`
     );
   }
 

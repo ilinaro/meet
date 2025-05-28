@@ -16,6 +16,7 @@ export interface IContact {
   readonly isInContacts: boolean;
   readonly nickname: string;
   readonly _id: string;
+  message?: MessageData;
 }
 
 export interface MessageData {
@@ -23,10 +24,5 @@ export interface MessageData {
   content: string;
   timestamp: string;
   chatId?: string;
-}
-
-export interface ContactData {
-  senderId: string;
-  chatId: string;
-  timestamp: string;
+  isNewMessage?: boolean;
 }

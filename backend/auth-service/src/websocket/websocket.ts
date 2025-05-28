@@ -127,25 +127,6 @@ export const initWebSocket = (httpServer: HttpServer) => {
       }
     });
 
-    socket.on("testMessage", ({ chatId, content }) => {
-      if (!chatId || !content) {
-        socket.emit("error", { message: "chatId и content обязательны" });
-        return;
-      }
-
-      logger.info(
-        `WebSocket: Получено тестовое сообщение для чата ${chatId}: ${content}`,
-      );
-      io.to(chatId).emit("testMessage", {
-        senderId: socket.user!._id,
-        content,
-        timestamp: new Date().toISOString(),
-      });
-      logger.info(
-        `WebSocket: Рассылка тестового сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`,
-      );
-    });
-
     socket.on("disconnect", () => {
       logger.info(`WebSocket: Пользователь ${socket.user!._id} отключился`);
 

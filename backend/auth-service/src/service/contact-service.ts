@@ -1,8 +1,7 @@
-import { Types } from "mongoose";
 import ContactModel from "../models/contact-model";
 import ChatService from "./chat-service";
 import ApiError from "../exceptions/api-error";
-import WebSocketService from "./websocket-service"; // Экземпляр синглтона
+import WebSocketService from "./websocket-service";
 
 interface PopulatedContactId {
   _id: string;
@@ -11,9 +10,9 @@ interface PopulatedContactId {
 }
 
 export class ContactService {
-  constructor(private readonly webSocketService: typeof WebSocketService) {} // Исправлен тип
+  constructor(private readonly webSocketService: typeof WebSocketService) {}
 
-  async addContact(userId: string, contactId: string) {
+  async addContact(userId: string, contactId: string, nickname: string) {
     if (userId === contactId) {
       throw ApiError.BadRequest("Нельзя добавить себя в контакты");
     }
@@ -33,23 +32,28 @@ export class ContactService {
 
     // Создаём записи для обоих пользователей
     const [contact, reverseContact] = await Promise.all([
-      ContactModel.create({ userId, contactId, chatId: chat._id }),
+      ContactModel.create({
+        userId,
+        contactId,
+        chatId: chat._id,
+        nickname,
+      }),
       ContactModel.create({
         userId: contactId,
         contactId: userId,
         chatId: chat._id,
+        nickname: userId,
       }),
     ]);
 
-    // Отправляем уведомление через WebSocketService
     this.webSocketService.sendNotification(contactId, {
       type: "contact",
-      senderId: userId,
+      _id: userId,
       chatId: chat._id.toString(),
-      timestamp: new Date().toISOString(),
+      isInContacts: true,
+      nickname,
     });
 
-    // Возвращаем информацию о контакте и чате
     return {
       contact,
       chatId: chat._id,
@@ -91,4 +95,4 @@ export class ContactService {
   }
 }
 
-export default new ContactService(WebSocketService); // Передаём экземпляр
+export default new ContactService(WebSocketService);

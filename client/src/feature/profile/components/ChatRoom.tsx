@@ -22,7 +22,9 @@ export const ChatRoom: React.FC = () => {
   const userContact = useAppSelector(selectUserContact);
   const [messageInput, setMessageInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isSocketReady, setIsSocketReady] = useState(SocketService.isConnected());
+  const [isSocketReady, setIsSocketReady] = useState(
+    SocketService.isConnected(),
+  );
   const hasJoinedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const outputRef = useRef<boolean>(false);
@@ -58,8 +60,8 @@ export const ChatRoom: React.FC = () => {
   }, [userMain?._id, userContact?.chatId]); // Зависимость от chatId
 
   useEffect(() => {
-    if (userContact && !userContact?.isInContacts && outputRef.current) {
-      addUser(userContact._id);
+    if (userContact && !userContact?.isInContacts && outputRef.current && userMain?.nickname) {
+      addUser({ _id: userContact._id });
     }
   }, [userContact?._id, outputRef.current]);
 
@@ -75,7 +77,10 @@ export const ChatRoom: React.FC = () => {
       isSocketReady &&
       !hasJoinedRef.current
     ) {
-      if (prevChatIdRef.current && prevChatIdRef.current !== userContact.chatId) {
+      if (
+        prevChatIdRef.current &&
+        prevChatIdRef.current !== userContact.chatId
+      ) {
         SocketService.leaveChat(prevChatIdRef.current);
       }
       SocketService.joinChat(userContact._id, userContact.chatId);

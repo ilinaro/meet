@@ -1,12 +1,14 @@
 import { Title as TextMantine } from "@mantine/core";
 import styles from "./Text.module.scss";
 import { useGetCSSVars } from "../../lib/useGetCSSVars";
+import clsx from "clsx";
 
 type Props = {
   children?: React.ReactNode;
   color?: string;
   size?: number | string;
   fw?: number;
+  className?: string;
   gradient?: boolean;
 };
 
@@ -16,6 +18,7 @@ export const Text: React.FC<Props> = ({
   size = 14,
   fw = 500,
   gradient = false,
+  className = "",
 }) => {
   const currentColor = useGetCSSVars("color", color);
 
@@ -42,7 +45,7 @@ export const Text: React.FC<Props> = ({
 
   return (
     <TextMantine
-      className={gradient ? styles.gradientText : undefined}
+      className={clsx(className, gradient && styles.gradientText)}
       style={{
         color: gradient ? undefined : currentColor,
         fontSize: resolvedSize,

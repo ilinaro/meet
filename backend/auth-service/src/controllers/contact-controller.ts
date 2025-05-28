@@ -5,13 +5,13 @@ import ApiError from "../exceptions/api-error";
 class ContactController {
   async addContact(req: Request, res: Response, next: NextFunction) {
     try {
-      const { id: targetUserId } = req.body;
+      const { _id: targetUserId, nickname } = req.body;
       const { _id } = req.user;
-      if (!targetUserId) {
-        throw ApiError.BadRequest("Не указан ID целевого пользователя");
+      if (!targetUserId || !nickname) {
+        throw ApiError.BadRequest("Нет некоторых данных о пользователе");
       }
 
-      await ContactService.addContact(_id, targetUserId);
+      await ContactService.addContact(_id, targetUserId, nickname);
       res.json({ message: "Пользователь добавлен в контакты" });
     } catch (error) {
       next(error);

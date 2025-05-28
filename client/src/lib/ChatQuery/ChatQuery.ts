@@ -7,12 +7,16 @@ import {
   selectUserContact,
   useSetUserContact,
 } from "../../store/userContactStateSlice";
+import { selectUserMain } from "../../store/userMainStateSlice";
 
 export const useAddChatQuery = () => {
   const userContact = useAppSelector(selectUserContact);
+  const userMain = useAppSelector(selectUserMain);
+
   const setUserContact = useSetUserContact();
   return useMutation({
-    mutationFn: async (id: string) => await ChatService.add({ id }),
+    mutationFn: async ({ _id }: { _id: string }) =>
+      await ChatService.add({ _id, nickname: userMain?.nickname }),
     onSuccess: () => {
       if (userContact) {
         setUserContact({
