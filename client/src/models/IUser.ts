@@ -17,6 +17,8 @@ export interface IContact {
   readonly nickname: string;
   readonly _id: string;
   message?: MessageData;
+  isOnline?: boolean;
+  lastSeen?: string | null;
 }
 
 export interface MessageData {
@@ -25,4 +27,10 @@ export interface MessageData {
   timestamp: string;
   chatId?: string;
   isNewMessage?: boolean;
+}
+
+export interface UserStatus {
+  userId?: string;
+  isOnline: boolean;
+  lastSeen?: string | null;
 }

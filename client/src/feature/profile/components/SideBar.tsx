@@ -4,7 +4,6 @@ import { useGetUserQuery, useSearchUsersQuery } from "../../../lib/UserQuery";
 import { useDebounce } from "../../../hook";
 import { Text, Input } from "../../../components";
 import { SearchList } from ".";
-import { useSetUserMain } from "../../../store/userMainStateSlice";
 import { useCallback, useEffect, useState } from "react";
 import SocketService from "../../../services/socket.service";
 import { selectUserMain } from "../../../store/userMainStateSlice";
@@ -15,27 +14,17 @@ import styles from "../Profile.module.scss";
 import { selectUserContact } from "../../../store/userContactStateSlice";
 
 export const SideBar: React.FC = () => {
-  const setUserMain = useSetUserMain();
+  
+
   const userMain = useAppSelector(selectUserMain);
   const userContact = useAppSelector(selectUserContact);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
-
   const [messageRoom, setMessageRoom] = useState<MessageData>();
   const [contactRoom, setContactRoom] = useState<IContact>();
-  const { data, isSuccess } = useGetUserQuery();
-
-  useEffect(() => {
-    if (data && isSuccess) {
-      setUserMain(data);
-    }
-  }, [isSuccess]);
-
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
   const { data: contactsData } = useGetContacts();
-  const { data: searchData, isLoading } =
-    useSearchUsersQuery(debouncedSearchTerm);
+  const { data: searchData, isLoading } = useSearchUsersQuery(debouncedSearchTerm);
 
   const handleMessageRoom = useCallback((data: MessageData) => {
     setMessageRoom(data);
@@ -45,48 +34,30 @@ export const SideBar: React.FC = () => {
     setContactRoom(data);
   }, []);
 
-  const handleError = useCallback((error: any) => {
-    console.error("ChatContainer: Ошибка сокета:", error.message);
-  }, []);
-
   useEffect(() => {
-    if (userMain?._id) {
-      if (!SocketService.isConnected()) {
-        SocketService.connect(userMain._id)
-          .then(() => {
-            console.log("ChatContainer: Подключено к сокету");
-          })
-          .catch((error) => {
-            console.error("ChatContainer: Ошибка подключения:", error);
-          });
-      }
+    SocketService.onNewContact(handleNewContact);
+    SocketService.onMessageRoom(handleMessageRoom);
+    SocketService.onMessage(handleMessageRoom);
 
-      SocketService.onNewContact(handleNewContact);
-      SocketService.onMessageRoom(handleMessageRoom);
-      SocketService.onMessage(handleMessageRoom);
-      SocketService.onError(handleError);
-
-      return () => {
-        SocketService.offNewContact(handleNewContact);
-        SocketService.offMessageRoom(handleMessageRoom);
-        SocketService.offMessage(handleMessageRoom);
-        SocketService.offError(handleError);
-      };
-    }
-  }, [userMain?._id, handleMessageRoom, handleNewContact, handleError]);
+    return () => {
+      SocketService.offNewContact(handleNewContact);
+      SocketService.offMessageRoom(handleMessageRoom);
+      SocketService.offMessage(handleMessageRoom);
+    };
+  }, [handleMessageRoom, handleNewContact]);
 
   useEffect(() => {
     queryClient.setQueryData(["userContacts"], (oldData?: IContact[]) => {
       if (!oldData) return oldData;
 
       return oldData.map((messageContact) => {
-        let contactListChatId = messageContact?.chatId
-        let newMessageChatIdAny = messageRoom?.chatId
-        let choiceContactChatId = userContact?.chatId
+        let contactListChatId = messageContact?.chatId;
+        let newMessageChatIdAny = messageRoom?.chatId;
+        let choiceContactChatId = userContact?.chatId;
 
         let isNewMessage =
           userMain?._id !== messageRoom?.senderId &&
-          choiceContactChatId !== messageRoom?.chatId
+          choiceContactChatId !== messageRoom?.chatId;
 
         if (contactListChatId === newMessageChatIdAny) {
           return {
@@ -94,29 +65,32 @@ export const SideBar: React.FC = () => {
             message: {
               content: messageRoom?.content,
               timestamp: messageRoom?.timestamp,
-              isNewMessage
-            }
-          }
-        } else return messageContact
+              isNewMessage,
+            },
+          };
+        }
+        return messageContact;
       });
     });
-  }, [messageRoom])
+  }, [messageRoom]);
 
   useEffect(() => {
-    let isOldContact = contactsData && contactsData?.find(contact => contact.chatId === contactRoom?.chatId)
+    let isOldContact =
+      contactsData &&
+      contactsData?.find((contact) => contact.chatId === contactRoom?.chatId);
 
-    if (isOldContact) return
+    if (isOldContact) return;
 
     queryClient.setQueryData(["userContacts"], (oldData?: IContact[]) => {
       if (!oldData) {
         queryClient.invalidateQueries({ queryKey: ["userContacts"] });
-        return
-      };
+        return;
+      }
       if (contactRoom) {
         return [...oldData, contactRoom];
       }
     });
-  }, [contactRoom]);
+  }, [contactRoom, contactsData]);
 
   return (
     <div className={styles.sideBar}>

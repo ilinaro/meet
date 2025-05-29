@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import UserService from "../../services/user.service";
-import { IContact } from "../../models";
+import { IContact, UserStatus } from "../../models";
 import { useAppSelector } from "../../store/useAppSelect";
 import { selectUserMain } from "../../store/userMainStateSlice";
 
@@ -27,7 +27,7 @@ export const useSearchUsersQuery = (searchTerm: string) => {
     },
     enabled: !!searchTerm.trim() && searchTerm.length >= 2,
     retry: 1,
-    staleTime: 1000 * 60,
+    staleTime: 10000,
   });
 };
 
@@ -37,5 +37,18 @@ export const useGetUsersIdMutation = () => {
       const { data } = await UserService.getUsersId(id);
       return data;
     },
+  });
+};
+
+export const useGetUserStatuses = (userIds: string[]) => {
+  return useQuery({
+    queryKey: ["userStatuses", userIds.sort()],
+    queryFn: async () => {
+      const { data } = await UserService.getUserStatuses(userIds);
+      return data;
+    },
+    enabled: !!userIds.length,
+    staleTime: Infinity,
+    retry: 1,
   });
 };

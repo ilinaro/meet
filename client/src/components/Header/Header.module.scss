@@ -23,6 +23,9 @@
   }
 }
 
+.active {
+  cursor: pointer;
+}
 .btns {
   display: flex;
   & > :nth-child(1n) {

@@ -27,7 +27,7 @@ export const useAddChatQuery = () => {
       queryClient.invalidateQueries({ queryKey: ["userContacts"] });
     },
     onError: (error: any) => {
-      useHadlerError(error?.response?.data?.message);
+      console.error("Add chat error", error);
     },
   });
 };
@@ -49,7 +49,7 @@ export const useDeleteChatQuery = () => {
       queryClient.invalidateQueries({ queryKey: ["userContacts"] });
     },
     onError: (error: any) => {
-      useHadlerError(error?.response?.data?.message);
+      console.error("Delete chat error", error);
     },
   });
 };

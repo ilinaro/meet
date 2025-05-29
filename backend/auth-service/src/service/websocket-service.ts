@@ -40,7 +40,7 @@ export class WebSocketService {
     }
     this.io.to(userId).emit("newContactOrMessage", notification);
     logger.info(
-      `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`
+      `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`,
     );
   }
 

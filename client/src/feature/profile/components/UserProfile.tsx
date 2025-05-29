@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { Button, Text } from "../../../components";
 import { useAddChatQuery, useDeleteChatQuery } from "../../../lib/ChatQuery";
 import { IContact } from "../../../models";
@@ -33,15 +34,18 @@ export const UserProfile: React.FC = () => {
       </Text>
       <br />
       <Text size={25} fw={400} color="violet">
-        {/* {userContact?.isOnline ? "В сети" : "Не в сети"} */}
+        {userContact?.isOnline ? "В сети" : "Не в сети"}
       </Text>
       <br />
-      <Text size={25} fw={400}>
-        Был{" "}
-        {/* {userContact?.lastSeen
-          ? dayjs(userContact?.lastSeen).format("DD.MM.YYYY HH:mm")
-          : "очень давно"} */}
-      </Text>
+      {
+        !userContact?.isOnline && userContact.lastSeen &&
+        <Text size={25} fw={400}>
+          Был{" "}
+          {userContact?.lastSeen
+            ? dayjs(userContact?.lastSeen).format("DD.MM.YYYY HH:mm")
+            : "очень давно"}
+        </Text>
+      }
       <br />
       <Text size={25} fw={400}>
         {/* Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"} */}

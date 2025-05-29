@@ -15,6 +15,12 @@ interface ErrorData {
   message: string;
 }
 
+interface UserStatusData {
+  userId: string;
+  isOnline: boolean;
+  lastSeen?: string;
+}
+
 export class SocketService {
   private socket: Socket | null = null;
   private isConnecting: boolean = false;
@@ -69,6 +75,16 @@ export class SocketService {
     });
   }
 
+  // Новый метод для статуса
+  onUserStatus(callback: (data: UserStatusData) => void): void {
+    this.socket?.on("userStatus", callback);
+  }
+
+  // Новый метод для отключения статуса
+  offUserStatus(callback: (data: UserStatusData) => void): void {
+    this.socket?.off("userStatus", callback);
+  }
+
   disconnect(): void {
     if (this.socket) {
       this.socket.disconnect();
@@ -81,7 +97,6 @@ export class SocketService {
   isConnected(): boolean {
     return !!this.socket && this.socket.connected;
   }
-
 
   onConnect(callback: () => void): void {
     this.socket?.on("connect", callback);

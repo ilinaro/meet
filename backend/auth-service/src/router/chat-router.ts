@@ -4,6 +4,7 @@ import chatController from "../controllers/chat-controller";
 import contactController from "../controllers/contact-controller";
 import authMiddleware from "../middleware/auth-middleware";
 import { Routers } from "../types/routers";
+import userStatusController from "../controllers/user-status-controller";
 
 const router = express.Router();
 
@@ -13,23 +14,23 @@ router.post(
   body("targetUserId")
     .notEmpty()
     .withMessage("Не указан ID целевого пользователя"),
-  chatController.startChat,
+  chatController.startChat
 );
 router.post(
   Routers.CHAT_ADD_CONTACT,
   authMiddleware,
   body("id").notEmpty().withMessage("Не указан ID целевого пользователя"),
-  contactController.addContact,
+  contactController.addContact
 );
 router.get(
   Routers.CHAT_CONTACTS,
   authMiddleware,
-  contactController.getContacts,
+  contactController.getContacts
 );
 router.delete(
   Routers.CHAT_REMOVE,
   authMiddleware,
-  contactController.removeContact,
+  contactController.removeContact
 );
 router.get(
   Routers.CHAT_MESSAGES,
@@ -43,7 +44,17 @@ router.get(
     .optional()
     .isInt({ min: 0 })
     .withMessage("Skip должен быть целым числом >= 0"), // Валидация skip
-  chatController.getMessages,
+  chatController.getMessages
+);
+router.post(
+  "/users/status",
+  authMiddleware,
+  body("userIds")
+    .isArray()
+    .withMessage("userIds должен быть массивом")
+    .custom((userIds) => userIds.every((id: unknown) => typeof id === "string"))
+    .withMessage("Все userIds должны быть строками"),
+  userStatusController.getStatuses
 );
 
 export default router;

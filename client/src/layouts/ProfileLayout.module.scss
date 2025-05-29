@@ -2,3 +2,13 @@
   width: 100vw;
   height: 100vh;
 }
+
+.loaderContainer {
+  margin-top: 5px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  & > :nth-child(1) {
+    margin-right: 20px;
+  }
+}

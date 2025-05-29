@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { UserProfile } from "./UserProfile";
 import { ChatRoom } from "./ChatRoom";
 import {

@@ -60,7 +60,12 @@ export const ChatRoom: React.FC = () => {
   }, [userMain?._id, userContact?.chatId]); // Зависимость от chatId
 
   useEffect(() => {
-    if (userContact && !userContact?.isInContacts && outputRef.current && userMain?.nickname) {
+    if (
+      userContact &&
+      !userContact?.isInContacts &&
+      outputRef.current &&
+      userMain?.nickname
+    ) {
       addUser({ _id: userContact._id });
     }
   }, [userContact?._id, outputRef.current]);

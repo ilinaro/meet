@@ -1,9 +1,10 @@
 import { Button } from "../Button";
 import styles from "./Header.module.scss";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import img from "../../assets/images/logo.png";
 import { useAppSelector } from "../../store/useAppSelect";
 import { UserHeader } from "./components";
+import clsx from "clsx";
 
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -14,11 +15,11 @@ export const Header: React.FC = () => {
 
   return (
     <div className={styles.header}>
-      <Link to="/">
-        <div className={styles.logo}>
+      <div onClick={!isLogin ? () => navigate("/") : () => navigate("/home")}>
+        <div className={clsx(styles.logo, [!isHome && styles.active])}>
           <img src={img} alt="logo" />
         </div>
-      </Link>
+      </div>
       {isLogin && isHome ? <UserHeader /> : null}
       {!isLogin && (
         <div className={styles.btns}>

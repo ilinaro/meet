@@ -14,6 +14,7 @@ const ContactSchema = new Schema(
     contactId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     chatId: { type: Schema.Types.ObjectId, ref: "Chat" },
     nickname: { type: String, required: true },
+    isInContacts: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

@@ -32,8 +32,8 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
             )}
             onClick={() => setUserContact(contact)}
           >
-            {/* {contact.isOnline && <div className={styles.status}></div>} */}
             <div className={styles.photoContants}>
+            {contact.isOnline && <div className={styles.status}></div>}
               <Text size={35} color="violet">
                 {contact.nickname?.[0]?.toUpperCase() || "..."}
               </Text>
@@ -48,13 +48,16 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
                 {contact?.message?.isNewMessage && (
                   <div className={styles.newMessage}></div>
                 )}
-                <div>
-                </div>
+                <div></div>
               </div>
               <div className={styles.messageContact}>
                 <div className={styles.textContainer}>
                   {contact?.message && (
-                    <Text size={14} color="border" className={styles.textMessage}>
+                    <Text
+                      size={14}
+                      color="border"
+                      className={styles.textMessage}
+                    >
                       {contact.message?.content}
                     </Text>
                   )}
@@ -62,14 +65,13 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
                 <div className={styles.timeMessage}>
                   <Text size={10} color="gray">
                     {contact.message?.timestamp &&
-                      dayjs(contact.message?.timestamp).format("DD.MM HH:mm")
-                    }
+                      dayjs(contact.message?.timestamp).format("DD.MM HH:mm")}
                   </Text>
                 </div>
               </div>
             </div>
           </div>
         ))}
-    </div >
+    </div>
   );
 });
