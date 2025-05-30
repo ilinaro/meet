@@ -34,3 +34,7 @@ export interface UserStatus {
   isOnline: boolean;
   lastSeen?: string | null;
 }
+
+export interface ContactDeletedData {
+  contactId: string;
+}

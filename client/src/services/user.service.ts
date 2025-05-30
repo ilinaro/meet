@@ -19,8 +19,9 @@ export default class UserService {
     return $api.get<IContact>(`/users/${id}`);
   }
 
-
-  static async getUserStatuses(userIds: string[]): Promise<AxiosResponse<Record<string, UserStatus>>> {
+  static async getUserStatuses(
+    userIds: string[],
+  ): Promise<AxiosResponse<Record<string, UserStatus>>> {
     return $api.post("/users/status", { userIds });
   }
 }

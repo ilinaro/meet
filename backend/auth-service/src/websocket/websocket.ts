@@ -1,4 +1,3 @@
-
 import { Server as HttpServer } from "http";
 import { Server, Socket } from "socket.io";
 import tokenService from "../service/token-service";
@@ -8,6 +7,7 @@ import UserStatusService from "../service/user-status-service";
 import ChatModel from "../models/chat-model";
 import WebSocketService from "../service/websocket-service";
 import UserStatusModel from "../models/user-status-model";
+import ContactModel from "../models/contact-model";
 
 interface AuthSocket extends Socket {
   user?: { _id: string };
@@ -54,7 +54,7 @@ export const initWebSocket = (httpServer: HttpServer) => {
 
     const userId = socket.user._id;
     logger.success(
-      `WebSocket: Пользователь ${userId} подключился, socket ID: ${socket.id}`
+      `WebSocket: Пользователь ${userId} подключился, socket ID: ${socket.id}`,
     );
 
     socket.join(userId);
@@ -63,7 +63,10 @@ export const initWebSocket = (httpServer: HttpServer) => {
       isOnline: true,
       lastSeen: null,
     }).catch((error) =>
-      logger.error(`WebSocket: Ошибка обновления статуса для ${userId}:`, error)
+      logger.error(
+        `WebSocket: Ошибка обновления статуса для ${userId}:`,
+        error,
+      ),
     );
 
     io.emit("userStatus", {
@@ -80,12 +83,12 @@ export const initWebSocket = (httpServer: HttpServer) => {
       }
 
       logger.info(
-        `WebSocket: Пользователь ${userId} присоединяется к чату ${chatId}`
+        `WebSocket: Пользователь ${userId} присоединяется к чату ${chatId}`,
       );
       socket.join(chatId);
       socket.emit("chatJoined", { chatId });
       logger.info(
-        `WebSocket: Пользователь ${userId} присоединился к чату ${chatId}`
+        `WebSocket: Пользователь ${userId} присоединился к чату ${chatId}`,
       );
     });
 
@@ -96,7 +99,7 @@ export const initWebSocket = (httpServer: HttpServer) => {
       }
 
       logger.info(
-        `WebSocket: Получено сообщение для чата ${chatId}: ${content}`
+        `WebSocket: Получено сообщение для чата ${chatId}: ${content}`,
       );
 
       try {
@@ -125,7 +128,7 @@ export const initWebSocket = (httpServer: HttpServer) => {
           timestamp: message.createdAt.toISOString(),
         });
         logger.info(
-          `WebSocket: Рассылка сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`
+          `WebSocket: Рассылка сообщения от ${socket.user!._id} в чат ${chatId}: ${content}`,
         );
       } catch (error) {
         logger.error("Ошибка сохранения сообщения:", error);
@@ -133,8 +136,52 @@ export const initWebSocket = (httpServer: HttpServer) => {
       }
     });
 
+    socket.on("deleteContact", async ({ contactId }) => {
+      try {
+        const contact = await ContactModel.findOneAndDelete({
+          userId,
+          contactId,
+        });
+
+        if (!contact) {
+          socket.emit("error", { message: "Контакт не найден" });
+          return;
+        }
+
+        // Удаляем обратную связь
+        await ContactModel.findOneAndDelete({
+          userId: contactId,
+          contactId: userId,
+        });
+
+        // Отправляем уведомления об удалении
+        WebSocketService.sendNotification(userId, {
+          type: "contactDeleted",
+          contactId,
+        });
+
+        WebSocketService.sendNotification(contactId, {
+          type: "contactDeleted",
+          contactId: userId,
+        });
+
+        socket.emit("deleteContactSuccess", { contactId });
+        logger.info(
+          `WebSocket: Контакт ${contactId} удален пользователем ${userId}`,
+        );
+      } catch (error) {
+        logger.error(
+          `WebSocket: Ошибка удаления контакта для ${userId}:`,
+          error,
+        );
+        socket.emit("error", { message: "Не удалось удалить контакт" });
+      }
+    });
+
     socket.on("disconnect", async (reason) => {
-      logger.info(`WebSocket: Пользователь ${userId} отключился, причина: ${reason}`);
+      logger.info(
+        `WebSocket: Пользователь ${userId} отключился, причина: ${reason}`,
+      );
 
       try {
         await UserStatusService.updateUserStatus(userId, {
@@ -147,7 +194,9 @@ export const initWebSocket = (httpServer: HttpServer) => {
           isOnline: false,
           lastSeen: new Date().toISOString(),
         });
-        logger.info(`WebSocket: Отправлен userStatus для ${userId}: isOnline=false`);
+        logger.info(
+          `WebSocket: Отправлен userStatus для ${userId}: isOnline=false`,
+        );
       } catch (error) {
         logger.error(`WebSocket: Ошибка при отключении ${userId}:`, error);
       }
@@ -178,7 +227,9 @@ export const initWebSocket = (httpServer: HttpServer) => {
           isOnline: false,
           lastSeen: new Date().toISOString(),
         });
-        logger.info(`WebSocket: Исправлен устаревший статус для ${status.userId}`);
+        logger.info(
+          `WebSocket: Исправлен устаревший статус для ${status.userId}`,
+        );
       }
     } catch (error) {
       logger.error("WebSocket: Ошибка проверки статусов:", error);

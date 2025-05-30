@@ -37,15 +37,14 @@ export const UserProfile: React.FC = () => {
         {userContact?.isOnline ? "В сети" : "Не в сети"}
       </Text>
       <br />
-      {
-        !userContact?.isOnline && userContact.lastSeen &&
+      {!userContact?.isOnline && userContact.lastSeen && (
         <Text size={25} fw={400}>
           Был{" "}
           {userContact?.lastSeen
             ? dayjs(userContact?.lastSeen).format("DD.MM.YYYY HH:mm")
             : "очень давно"}
         </Text>
-      }
+      )}
       <br />
       <Text size={25} fw={400}>
         {/* Звонки {userContact?.allowChatInvites ? "разрешены" : "запрещены"} */}

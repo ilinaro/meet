@@ -12,7 +12,7 @@ export const App: React.FC = () => {
   const authRef = useRef(false);
   const token = selectAccessToken(store.getState());
   const { isLogin } = useAppSelector((state) => state.authState);
-  
+
   useEffect(() => {
     if (!authRef.current) {
       mutate();
@@ -20,6 +20,6 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  if(!token && isLogin === undefined) return <></>
+  if (!token && isLogin === undefined) return <></>;
   return <Routers />;
 };

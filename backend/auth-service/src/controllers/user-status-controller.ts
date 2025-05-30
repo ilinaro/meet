@@ -17,7 +17,7 @@ class UserStatusController {
       const statuses = await UserStatusService.getStatuses(userIds);
       res.json(statuses);
       logger.info(
-        `UserStatusController: Возвращены статусы для ${userIds.length} пользователей`
+        `UserStatusController: Возвращены статусы для ${userIds.length} пользователей`,
       );
     } catch (error) {
       next(error);

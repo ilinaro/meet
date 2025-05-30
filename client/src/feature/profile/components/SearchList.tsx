@@ -53,11 +53,11 @@ export const SearchList: React.FC<Props> = React.memo(
                 onClick={() => choiceUser(userItem)}
               >
                 <div className={styles.photoContants}>
-                  {/* {userItem.isOnline && <div className={styles.status}></div>} */}
                   <Text size={35} color="violet">
                     {userItem.nickname?.[0]?.toUpperCase() || "..."}
                   </Text>
                 </div>
+
                 <Text size={24} color={"black-general"}>
                   {userItem.nickname}
                 </Text>

@@ -1,19 +1,20 @@
 import { Outlet } from "react-router-dom";
-import styles from "./ProfileLayout.module.scss";
 import { ErrorBoundary } from "react-error-boundary";
-import { ErrorFallback } from "../components";
-import { Header } from "../components/Header/Header";
 import { useCallback, useEffect, useState } from "react";
-import { selectUserMain, useSetUserMain } from "../store/userMainStateSlice";
+import { useSetUserMain } from "../store/userMainStateSlice";
 import { useAppSelector } from "../store/useAppSelect";
 import SocketService from "../services/socket.service";
 import { IContact, UserStatus } from "../models";
 import { useGetUserQuery, useGetUserStatuses } from "../lib/UserQuery";
-import { selectUserContact, useSetUserContact } from "../store/userContactStateSlice";
+import {
+  selectUserContact,
+  useSetUserContact,
+} from "../store/userContactStateSlice";
 import { useGetContacts } from "../lib/ChatQuery";
 import { queryClient } from "../main";
 import { Loader } from "@mantine/core";
-import { Text } from "../components";
+import { Text, Header, ErrorFallback } from "../components";
+import styles from "./ProfileLayout.module.scss";
 
 type Props = {
   children?: React.ReactNode;
@@ -25,41 +26,40 @@ export const ProfileLayout: React.FC<Props> = () => {
   const setUserContact = useSetUserContact();
   const [errorConnect, setErrorConnect] = useState<any>();
   const { data: contactsData, isSuccess: isSuccessContacts } = useGetContacts();
+  const { data: userData, isSuccess } = useGetUserQuery();
 
   const handleUserStatus = useCallback((data: UserStatus) => {
     setUserStatus(data);
   }, []);
 
-  const { data, isSuccess } = useGetUserQuery();
-  
   useEffect(() => {
-    if (data && isSuccess) {
-      setUserMain(data);
+    if (userData && isSuccess) {
+      setUserMain(userData);
     }
-  }, [isSuccess, data, setUserMain]);
+  }, [isSuccess, userData, setUserMain]);
 
   const handleError = useCallback((error: any) => {
-    setErrorConnect(error)
+    setErrorConnect(error);
     console.error("ChatContainer: Ошибка сокета:", error.message);
   }, []);
 
-  const status = SocketService.isConnected()
+  const status = SocketService.isConnected();
   const contactIds = contactsData?.map((contact) => contact._id) || [];
   const { data: statusesData } = useGetUserStatuses(contactIds);
 
   const [userStatus, setUserStatus] = useState<UserStatus>();
-  const userMain = useAppSelector(selectUserMain);
 
   useEffect(() => {
-    if (userMain?._id) {
+    if (userData?._id) {
       if (!status) {
-        SocketService.connect(userMain._id)
+        SocketService.connect(userData._id)
           .then(() => {
-            setErrorConnect("")
-            console.log("ChatContainer: Подключено к сокету")
+            setErrorConnect("");
+            console.log("ChatContainer: Подключено к сокету");
           })
           .catch((error) => {
-            console.error("ChatContainer: Ошибка подключения:", error)
+            setErrorConnect(error);
+            console.error("ChatContainer: Ошибка подключения:", error);
           });
       }
 
@@ -72,7 +72,7 @@ export const ProfileLayout: React.FC<Props> = () => {
         SocketService.disconnect();
       };
     }
-  }, [userMain?._id, handleUserStatus, handleError]);
+  }, [userData?._id, handleUserStatus, handleError]);
 
   useEffect(() => {
     if (statusesData && contactsData) {
@@ -88,7 +88,7 @@ export const ProfileLayout: React.FC<Props> = () => {
                 isOnline: status.isOnline,
                 lastSeen: status.lastSeen,
               });
-            };
+            }
             return {
               ...contact,
               isOnline: status.isOnline,
@@ -112,7 +112,7 @@ export const ProfileLayout: React.FC<Props> = () => {
               isOnline: userStatus?.isOnline,
               lastSeen: userStatus?.lastSeen ?? null,
             });
-          };
+          }
           return {
             ...contact,
             isOnline: userStatus?.isOnline,
@@ -122,23 +122,30 @@ export const ProfileLayout: React.FC<Props> = () => {
         return contact;
       });
     });
-  }, [userStatus])
+  }, [userStatus]);
 
   return (
     <div className={styles.wrapper}>
       <Header />
-      {!status && errorConnect && <Text size={20} fw={500} color={"red"}>{"Ошибка подключения"}</Text>}
-      {!status && !errorConnect ?
+      {!status && errorConnect && (
+        <Text size={20} fw={500} color={"red"}>
+          {"Ошибка подключения"}
+        </Text>
+      )}
+      {!status && !errorConnect ? (
         <div className={styles.loaderContainer}>
           <>
             <Loader size={20} color="gray" />
-            <Text size={20} fw={500} color={"gray"}>Подключение...</Text>
+            <Text size={20} fw={500} color={"gray"}>
+              Подключение...
+            </Text>
           </>
-        </div> :
+        </div>
+      ) : (
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Outlet />
         </ErrorBoundary>
-      }
+      )}
     </div>
   );
 };

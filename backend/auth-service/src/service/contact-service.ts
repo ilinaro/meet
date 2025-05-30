@@ -2,6 +2,7 @@ import ContactModel from "../models/contact-model";
 import ChatService from "./chat-service";
 import ApiError from "../exceptions/api-error";
 import WebSocketService from "./websocket-service";
+import { logger } from "../utils/logger";
 
 interface PopulatedContactId {
   _id: string;
@@ -90,6 +91,22 @@ export class ContactService {
       userId: contactId,
       contactId: userId,
     });
+
+    // Отправляем уведомление второму участнику об удалении контакта
+    try {
+      this.webSocketService.sendNotification(contactId, {
+        type: "contactDeleted",
+        contactId: userId,
+      });
+      logger.info(
+        `Уведомление contactDeleted отправлено пользователю ${contactId}`,
+      );
+    } catch (error) {
+      logger.error(
+        `Ошибка отправки уведомления contactDeleted для ${contactId}:`,
+        error,
+      );
+    }
 
     return contact;
   }

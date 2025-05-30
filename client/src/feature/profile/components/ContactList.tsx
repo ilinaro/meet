@@ -14,7 +14,7 @@ type Props = {
   contactsData?: IContact[];
 };
 
-export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
+export const ContactList: React.FC<Props> = (({ contactsData }) => {
   const setUserContact = useSetUserContact();
   const userContact = useAppSelector(selectUserContact);
 
@@ -33,7 +33,7 @@ export const ContactList: React.FC<Props> = React.memo(({ contactsData }) => {
             onClick={() => setUserContact(contact)}
           >
             <div className={styles.photoContants}>
-            {contact.isOnline && <div className={styles.status}></div>}
+              {contact.isOnline && <div className={styles.status}></div>}
               <Text size={35} color="violet">
                 {contact.nickname?.[0]?.toUpperCase() || "..."}
               </Text>

@@ -17,7 +17,15 @@ interface MessageNotification {
   timestamp: string;
 }
 
-type Notification = ContactNotification | MessageNotification;
+interface ContactDeletedNotification {
+  type: "contactDeleted";
+  contactId: string;
+}
+
+type Notification =
+  | ContactNotification
+  | MessageNotification
+  | ContactDeletedNotification;
 
 export class WebSocketService {
   private io: Server | null = null;

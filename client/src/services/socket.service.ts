@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { WS_URL } from "../http";
 import { selectAccessToken } from "../store/accessStateSlice";
 import store from "../store";
-import { IContact } from "../models";
+import { ContactDeletedData, IContact } from "../models";
 
 interface MessageData {
   senderId: string;
@@ -75,12 +75,10 @@ export class SocketService {
     });
   }
 
-  // Новый метод для статуса
   onUserStatus(callback: (data: UserStatusData) => void): void {
     this.socket?.on("userStatus", callback);
   }
 
-  // Новый метод для отключения статуса
   offUserStatus(callback: (data: UserStatusData) => void): void {
     this.socket?.off("userStatus", callback);
   }
@@ -207,6 +205,24 @@ export class SocketService {
 
   offError(callback: (data: ErrorData) => void): void {
     this.socket?.off("error", callback);
+  }
+
+  onContactDeleted(callback: (data: ContactDeletedData) => void): void {
+    const handler = ({ ...data }: any) => {
+      if (data.type === "contactDeleted") {
+        callback(data);
+      }
+    };
+    this.socket?.on("newContactOrMessage", handler);
+  }
+
+  offContactDeleted(callback: (data: ContactDeletedData) => void): void {
+    const handler = ({ ...data }: any) => {
+      if (data.type === "contactDeleted") {
+        callback(data);
+      }
+    };
+    this.socket?.off("newContactOrMessage", handler);
   }
 }
 

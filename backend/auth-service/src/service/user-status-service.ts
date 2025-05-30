@@ -13,9 +13,14 @@ interface UserStatusUpdate {
 }
 
 export class UserStatusService {
-  async updateUserStatus(userId: string, update: UserStatusUpdate): Promise<void> {
+  async updateUserStatus(
+    userId: string,
+    update: UserStatusUpdate,
+  ): Promise<void> {
     try {
-      logger.info(`UserStatusService: Обновление статуса для ${userId}: ${JSON.stringify(update)}`);
+      logger.info(
+        `UserStatusService: Обновление статуса для ${userId}: ${JSON.stringify(update)}`,
+      );
       const result = await UserStatusModel.findOneAndUpdate(
         { userId },
         {
@@ -24,9 +29,14 @@ export class UserStatusService {
         },
         { upsert: true, new: true },
       );
-      logger.info(`UserStatusService: Статус пользователя ${userId} обновлен: ${result.isOnline}`);
+      logger.info(
+        `UserStatusService: Статус пользователя ${userId} обновлен: ${result.isOnline}`,
+      );
     } catch (error) {
-      logger.error(`UserStatusService: Ошибка обновления статуса для ${userId}:`, error);
+      logger.error(
+        `UserStatusService: Ошибка обновления статуса для ${userId}:`,
+        error,
+      );
       throw ApiError.BadRequest("Ошибка обновления статуса");
     }
   }
@@ -50,7 +60,9 @@ export class UserStatusService {
         };
       });
 
-      logger.info(`UserStatusService: Получены статусы для ${userIds.length} пользователей: ${JSON.stringify(result)}`);
+      logger.info(
+        `UserStatusService: Получены статусы для ${userIds.length} пользователей: ${JSON.stringify(result)}`,
+      );
       return result;
     } catch (error) {
       logger.error("UserStatusService: Ошибка получения статусов:", error);
