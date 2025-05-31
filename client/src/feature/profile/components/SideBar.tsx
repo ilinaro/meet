@@ -24,7 +24,7 @@ export const SideBar: React.FC = () => {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const { data: contactsData = [] } = useGetContacts();
-  console.log(contactsData);
+  
   const { data: searchData, isLoading } =
     useSearchUsersQuery(debouncedSearchTerm);
 
@@ -33,7 +33,6 @@ export const SideBar: React.FC = () => {
   }, []);
 
   const handleNewContact = useCallback((data: IContact) => {
-    console.log("handleNewContact", data);
     setContactRoom(data);
   }, []);
 
@@ -114,7 +113,7 @@ export const SideBar: React.FC = () => {
         if (contact._id !== contactDeleted) {
           return contact;
         }
-      });
+      }); 
       setContactDeleted("");
       return nextData;
     });
