@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import UserService from "../../services/user.service";
-import { IContact, UserStatus } from "../../models";
+import { IContact } from "../../models";
 import { useAppSelector } from "../../store/useAppSelect";
 import { selectUserMain } from "../../store/userMainStateSlice";
 
