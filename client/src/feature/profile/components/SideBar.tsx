@@ -24,7 +24,7 @@ export const SideBar: React.FC = () => {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const { data: contactsData = [] } = useGetContacts();
-  console.log(contactsData)
+  console.log(contactsData);
   const { data: searchData, isLoading } =
     useSearchUsersQuery(debouncedSearchTerm);
 
@@ -107,16 +107,16 @@ export const SideBar: React.FC = () => {
 
   useEffect(() => {
     if (!contactDeleted) return;
-  
+
     queryClient.setQueryData(["userContacts"], (oldData?: IContact[]) => {
       if (!oldData) return [];
-      let nextData = oldData.filter(contact => {
+      let nextData = oldData.filter((contact) => {
         if (contact._id !== contactDeleted) {
-          return contact
+          return contact;
         }
       });
       setContactDeleted("");
-      return nextData
+      return nextData;
     });
   }, [contactDeleted]);
 

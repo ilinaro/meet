@@ -14,7 +14,7 @@ type Props = {
   contactsData?: IContact[];
 };
 
-export const ContactList: React.FC<Props> = (({ contactsData }) => {
+export const ContactList: React.FC<Props> = ({ contactsData }) => {
   const setUserContact = useSetUserContact();
   const userContact = useAppSelector(selectUserContact);
 
@@ -74,4 +74,4 @@ export const ContactList: React.FC<Props> = (({ contactsData }) => {
         ))}
     </div>
   );
-});
+};
