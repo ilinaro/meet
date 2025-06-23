@@ -10,9 +10,7 @@ interface MessageRoomProps {
   messageRoom?: MessageData;
 }
 
-export const useMessageRoom = ({
-  messageRoom,
-}: MessageRoomProps) => {
+export const useMessageRoom = ({ messageRoom }: MessageRoomProps) => {
   const userContact = useAppSelector(selectUserContact);
   const userMain = useAppSelector(selectUserMain);
   useEffect(() => {

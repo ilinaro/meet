@@ -20,13 +20,18 @@ export const Header: React.FC = () => {
           <img src={img} alt="logo" />
         </div>
       </div>
-      {isLogin && isHome ? <UserHeader /> : null}
-      {!isLogin && (
-        <div className={styles.btns}>
-          <Button onClick={() => navigate("/registration")}>Регистрация</Button>
-          <Button onClick={() => navigate("/login")}>Войти</Button>
-        </div>
-      )}
+      {
+        !isLogin ? (
+          <div className={styles.btns}>
+            <Button onClick={() => navigate("/registration")}>Регистрация</Button>
+            <Button onClick={() => navigate("/login")}>Войти</Button>
+          </div>
+        ) : (
+          <>
+            {isHome && <UserHeader />}
+          </>
+        )
+      }
     </div>
   );
 };

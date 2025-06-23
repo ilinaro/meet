@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Text } from "../../../components";
 import { motion } from "framer-motion";
 import { Loader } from "@mantine/core";
@@ -20,16 +20,22 @@ type Props = {
 
 export const SearchList: React.FC<Props> = React.memo(
   ({ searchData, isLoading = false, searchUser, contactsData }) => {
+    const isListNoEmpty = searchUser && searchUser.length >= 2 && !isLoading;
     const setUserContact = useSetUserContact();
     const userContact = useAppSelector(selectUserContact);
 
-    const choiceUser = (userItem: IContact) => {
-      const isContact = !!contactsData?.find(
-        (contact) => contact._id === userItem._id,
-      );
-      setUserContact({ ...userItem, isInContacts: isContact });
-    };
+    const contactsSet = useMemo(() =>
+      new Set(contactsData?.map(contact => contact._id)),
+      [contactsData]
+    );
 
+    const choiceUser = (userItem: IContact) => {
+      setUserContact({
+        ...userItem,
+        isInContacts: contactsSet.has(userItem._id)
+      });
+    }
+    
     return (
       <div className={styles.searchResults}>
         {isLoading && (
@@ -43,37 +49,40 @@ export const SearchList: React.FC<Props> = React.memo(
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            {searchData.map((userItem) => (
-              <div
-                key={userItem._id}
-                className={clsx(
-                  styles.searchResultItem,
-                  userItem._id === userContact?._id && styles.action,
-                )}
-                onClick={() => choiceUser(userItem)}
-              >
-                <div className={styles.photoContants}>
-                  <Text size={35} color="violet">
-                    {userItem.nickname?.[0]?.toUpperCase() || "..."}
+            {searchData.map((userItem) => {
+              if (userItem.isInContacts) return null;
+              return (
+                <div
+                  key={userItem._id}
+                  className={clsx(
+                    styles.searchResultItem,
+                    userItem._id === userContact?._id && styles.action,
+                  )}
+                  onClick={() => choiceUser(userItem)}
+                >
+                  <div className={styles.photoContants}>
+                    <Text size={35} color="violet">
+                      {userItem.nickname?.[0]?.toUpperCase() || "..."}
+                    </Text>
+                  </div>
+
+                  <Text size={24} color={"black-general"}>
+                    {userItem.nickname}
                   </Text>
                 </div>
-
-                <Text size={24} color={"black-general"}>
-                  {userItem.nickname}
-                </Text>
-              </div>
-            ))}
+              );
+            })}
           </motion.div>
         ) : (
-          searchUser &&
-          searchUser.length >= 2 &&
-          !isLoading && (
-            <div className={styles.searchResultItem}>
-              <Text size={14} color={"gray"}>
-                Пользователи не найдены
-              </Text>
-            </div>
-          )
+          <>
+            {isListNoEmpty && (
+              <div className={styles.searchResultItem}>
+                <Text size={14} color={"gray"}>
+                  Нет результатов
+                </Text>
+              </div>
+            )}
+          </>
         )}
       </div>
     );

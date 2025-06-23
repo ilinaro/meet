@@ -4,13 +4,24 @@ import { SearchList } from ".";
 import { useCallback, useState } from "react";
 import styles from "../Profile.module.scss";
 import { useGetContacts } from "../../../lib/ChatQuery";
-import { ContactDeletedData, IContact, MessageData } from "../../../models";
-import { useContactDeleted, useMessageRoom, useNewContact, useSearch, useSocketSubscriptions } from "../../../hook/sideBar";
-
+import { ContactDeleted, IContact, MessageData } from "../../../models";
+import {
+  useContactDeleted,
+  useMessageRoom,
+  useNewContact,
+  useSearch,
+  useSocketSubscriptions,
+} from "../../../hook/sideBar";
 
 export const SideBar: React.FC = () => {
-  const { searchTerm, setSearchTerm, debouncedSearchTerm, searchData, isLoading, isStateHeader } =
-    useSearch();
+  const {
+    searchTerm,
+    setSearchTerm,
+    debouncedSearchTerm,
+    searchData,
+    isLoading,
+    isStateHeader,
+  } = useSearch();
   const { data: contactsData = [] } = useGetContacts();
 
   const [messageRoom, setMessageRoom] = useState<MessageData>();
@@ -25,7 +36,7 @@ export const SideBar: React.FC = () => {
     setContactRoom(data);
   }, []);
 
-  const handleContactDeleted = useCallback(({ contactId }: ContactDeletedData) => {
+  const handleContactDeleted = useCallback(({ contactId }: ContactDeleted) => {
     setContactDeleted(contactId);
   }, []);
 
@@ -33,7 +44,11 @@ export const SideBar: React.FC = () => {
   useNewContact({ contactRoom, contactsData });
   useContactDeleted({ contactDeleted, setContactDeleted });
 
-  useSocketSubscriptions(handleMessageRoom, handleNewContact, handleContactDeleted);
+  useSocketSubscriptions(
+    handleMessageRoom,
+    handleNewContact,
+    handleContactDeleted,
+  );
 
   return (
     <div className={styles.sideBar}>
@@ -43,7 +58,9 @@ export const SideBar: React.FC = () => {
         onChange={(e) => setSearchTerm(e.target.value)}
       />
       <div className={styles.header}>
-        <Text size={14} color="border">{isStateHeader ? "Поиск" : "Контакты"}</Text>
+        <Text size={14} color="border">
+          {isStateHeader ? "Поиск" : "Контакты"}
+        </Text>
       </div>
       <div className={styles.contacts}>
         {isStateHeader ? (

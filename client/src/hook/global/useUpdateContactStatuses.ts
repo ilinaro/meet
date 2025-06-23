@@ -16,29 +16,41 @@ export const useUpdateContactStatuses = ({
 }: ContactStatusesHandlerProps) => {
   const setUserContact = useSetUserContact();
   const userContact = useAppSelector(selectUserContact);
-  
+
   useEffect(() => {
+    if (!updateContactStatus?.userId) return;
+
     queryClient.setQueryData(["userContacts"], (oldData?: IContact[]) => {
-      
       if (!oldData) return oldData;
-      
-      return oldData.map((contact) => {
-        if (contact._id === updateContactStatus?.userId) {
-          if (contact._id === userContact?._id) {
-            setUserContact({
-              ...contact,
-              isOnline: updateContactStatus?.isOnline,
-              lastSeen: updateContactStatus?.lastSeen ?? null,
-            });
-          }
-          return {
-            ...contact,
-            isOnline: updateContactStatus?.isOnline,
-            lastSeen: updateContactStatus?.lastSeen ?? null,
-          };
+
+      const targetUserId = updateContactStatus.userId;
+
+      const isCurrentUser = targetUserId === userContact?._id;
+
+      let updatedUserContact: IContact | null = null;
+
+      const updatedContacts = oldData.map((contact) => {
+        console.log(contact._id,  targetUserId)
+        if (contact._id !== targetUserId) return contact;
+
+        const updatedContact = {
+          ...contact,
+          isOnline: updateContactStatus.isOnline,
+          lastSeen: updateContactStatus.lastSeen ?? null,
+        };
+
+        if (isCurrentUser) {
+          updatedUserContact = updatedContact;
         }
-        return contact;
+
+        return updatedContact;
       });
+
+      if (updatedUserContact) {
+        setUserContact(updatedUserContact);
+      }
+
+      return updatedContacts;
     });
   }, [updateContactStatus]);
 };

@@ -19,16 +19,18 @@ Registration App - это приложение для регистрации п�
 ## Структура проекта
 
 ```
-registration-app/
+meet/
 ├── client/               # Frontend часть
 │   ├── src/              # Исходный код React-приложения
 │   ├── public/           # Статические файлы
 │   ├── ...               # Конфигурационные файлы
 │   └── package.json      # Зависимости клиентской части
-├── server/               # Backend часть
-│   ├── src/              # Исходный код сервера
-│   ├── ...               # Конфигурационные файлы
-│   └── package.json      # Зависимости серверной части
+├── backend/
+|   ├── auth-service/     # Backend часть
+│   |    ├── src/         # Исходный код сервера
+│   |    ├── ...          # Конфигурационные файлы
+│   |    └── package.json # Зависимости серверной части
+│   └── peer-service/     # Разарботка p2p для видео соединения WebRTC
 ├── .husky/               # Хуки Git для контроля качества кода
 ├── .gitignore            # Исключения для Git
 ├── package.json          # Зависимости корневого проекта
@@ -47,7 +49,7 @@ registration-app/
 1. **Клонирование репозитория**
    ```bash
    git clone <repository-url>
-   cd registration-app
+   cd meet
    ```
 
 2. **Установка зависимостей**
@@ -69,20 +71,21 @@ registration-app/
    Создайте файл `.env` в директории `server`:
    ```
    PORT=5000
-   DB_URL=mongodb://localhost:27017/registration-app
+   DB_URL=mongodb
    JWT_ACCESS_SECRET=your_access_secret_key
    JWT_REFRESH_SECRET=your_refresh_secret_key
    SMTP_HOST=smtp.example.com
    SMTP_PORT=587
    SMTP_USER=your_email@example.com
    SMTP_PASSWORD=your_email_password
-   API_URL=http://localhost:5000
-   CLIENT_URL=http://localhost:3000
+   API_URL=localhost
+   CLIENT_URL=localhost
    ```
 
    Создайте файл `.env` в директории `client`:
    ```
-   VITE_API_URL=http://localhost:5000/api
+   VITE_API_URL=localhost
+   VITE_WS_URL=localhost
    ```
 
 ## Клиентская часть (Frontend)
@@ -157,14 +160,14 @@ cd client
 npm run build
 
 # Сборка сервера
-cd ../server
+cd ../server/auth-service
 npm run build
 ```
 
 ### Запуск в production
 ```bash
 # Запуск сервера
-cd server
+cd server/auth-service
 npm run start
 ```
 

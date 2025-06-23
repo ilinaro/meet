@@ -25,7 +25,6 @@ export const useSocketConnection = ({
         SocketService.connect(userMain?._id)
           .then(() => {
             setErrorConnect("");
-            console.log("ChatContainer: Подключено к сокету");
           })
           .catch((error) => {
             setErrorConnect(error);

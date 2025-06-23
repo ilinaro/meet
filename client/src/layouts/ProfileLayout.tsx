@@ -9,7 +9,7 @@ import {
   useSocketConnection,
   useUserMainInitializer,
   useFirstLoadingContactStatuses,
-  useUpdateContactStatuses
+  useUpdateContactStatuses,
 } from "../hook/global";
 
 import styles from "./ProfileLayout.module.scss";
@@ -33,20 +33,20 @@ export const ProfileLayout: React.FC<Props> = () => {
   useUpdateContactStatuses({ updateContactStatus });
 
   useSocketConnection({
-    setErrorConnect,
     handleUserStatus,
+    setErrorConnect,
   });
 
   return (
     <div className={styles.wrapper}>
       <Header />
-      {
-       SocketService.isConnected() ?
-          <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <Outlet />
-          </ErrorBoundary> :
-          <LoaderAndConnect errorConnect={!!errorConnect} />
-      }
-    </div >
+      {SocketService.isConnected() ? (
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Outlet />
+        </ErrorBoundary>
+      ) : (
+        <LoaderAndConnect errorConnect={!!errorConnect} />
+      )}
+    </div>
   );
 };

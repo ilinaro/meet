@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { ContactDeleted, IContact, MessageData } from "../../models";
 import SocketService from "../../services/socket.service";
 
-export const useSocketSubscriptions = (
+export const useRoomSocketSubscriptions = (
   onMessageRoom: (data: MessageData) => void,
   onNewContact: (data: IContact) => void,
   onContactDeleted: (data: ContactDeleted) => void,

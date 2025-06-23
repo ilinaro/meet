@@ -34,6 +34,7 @@ export const ChatRoom: React.FC = () => {
   useEffect(() => {
     if (userMain?._id) {
       const handleMessage = (message: Message) => {
+        console.log(message)
         // Фильтруем сообщения по текущей комнате
         if (message.chatId && message.chatId === userContact?.chatId) {
           setMessages((prev) => [...prev, message]);
@@ -41,7 +42,7 @@ export const ChatRoom: React.FC = () => {
       };
 
       const handleError = ({ message }: { message: string }) => {
-        // console.error("ChatRoom: Ошибка сокета:", message);
+        console.error("ChatRoom: Ошибка сокета:", message);
       };
 
       const handleConnect = () => setIsSocketReady(true);

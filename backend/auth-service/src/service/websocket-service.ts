@@ -46,7 +46,7 @@ export class WebSocketService {
       logger.error("WebSocketService: io не инициализирован");
       return;
     }
-    this.io.to(userId).emit("newContactOrMessage", notification);
+    this.io.to(userId).emit("notificationWebSocket", notification);
     logger.info(
       `WebSocketService: Отправлено уведомление пользователю ${userId}: ${notification.type}`,
     );

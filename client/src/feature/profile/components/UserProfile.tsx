@@ -33,9 +33,12 @@ export const UserProfile: React.FC = () => {
         Профиль {userContact?.nickname}
       </Text>
       <br />
-      <Text size={25} fw={400} color="violet">
-        {userContact?.isOnline ? "В сети" : "Не в сети"}
-      </Text>
+      {
+        userContact?.isInContacts &&
+        <Text size={25} fw={400} color="violet">
+          {userContact?.isOnline ? "В сети" : "Не в сети"}
+        </Text>
+      }
       <br />
       {!userContact?.isOnline && userContact.lastSeen && (
         <Text size={25} fw={400}>

@@ -35,6 +35,6 @@ export interface UserStatus {
   lastSeen?: string | null;
 }
 
-export interface ContactDeletedData {
+export interface ContactDeleted {
   contactId: string;
 }

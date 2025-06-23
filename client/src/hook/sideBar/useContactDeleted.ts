@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { queryClient } from "../../main";
 import { IContact } from "../../models";
-import { selectUserContact, useSetUserContact } from "../../store/userContactStateSlice";
+import {
+  selectUserContact,
+  useSetUserContact,
+} from "../../store/userContactStateSlice";
 import { useAppSelector } from "../../store/useAppSelect";
 
 interface ContactDeletedProps {
@@ -20,10 +23,11 @@ export const useContactDeleted = ({
     if (!contactDeleted) return;
 
     queryClient.setQueryData(["userContacts"], (oldData?: IContact[]) => {
-      
       if (!oldData) return [];
 
-      let nextData = oldData.filter((contact) => (contact._id !== contactDeleted));
+      let nextData = oldData.filter(
+        (contact) => contact._id !== contactDeleted,
+      );
       if (userContact?._id === contactDeleted) {
         setUserContact(undefined);
       }

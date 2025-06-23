@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { WS_URL } from "../http";
 import { selectAccessToken } from "../store/accessStateSlice";
 import store from "../store";
-import { ContactDeletedData, IContact } from "../models";
+import { ContactDeleted, IContact, UserStatus } from "../models";
 
 interface MessageData {
   senderId: string;
@@ -13,12 +13,6 @@ interface MessageData {
 
 interface ErrorData {
   message: string;
-}
-
-interface UserStatusData {
-  userId: string;
-  isOnline: boolean;
-  lastSeen?: string;
 }
 
 export class SocketService {
@@ -75,11 +69,11 @@ export class SocketService {
     });
   }
 
-  onUserStatus(callback: (data: UserStatusData) => void): void {
+  onUserStatus(callback: (data: UserStatus) => void): void {
     this.socket?.on("userStatus", callback);
   }
 
-  offUserStatus(callback: (data: UserStatusData) => void): void {
+  offUserStatus(callback: (data: UserStatus) => void): void {
     this.socket?.off("userStatus", callback);
   }
 
@@ -158,7 +152,7 @@ export class SocketService {
         callback({ senderId, content, timestamp, chatId });
       }
     };
-    this.socket?.on("newContactOrMessage", handler);
+    this.socket?.on("notificationWebSocket", handler);
   }
 
   offMessageRoom(callback: (data: MessageData) => void): void {
@@ -167,7 +161,7 @@ export class SocketService {
         callback({ senderId, content, timestamp, chatId });
       }
     };
-    this.socket?.off("newContactOrMessage", handler);
+    this.socket?.off("notificationWebSocket", handler);
   }
 
   onNewContact(callback: (data: IContact) => void): void {
@@ -182,7 +176,7 @@ export class SocketService {
         });
       }
     };
-    this.socket?.on("newContactOrMessage", handler);
+    this.socket?.on("notificationWebSocket", handler);
   }
 
   offNewContact(callback: (data: IContact) => void): void {
@@ -196,7 +190,7 @@ export class SocketService {
         });
       }
     };
-    this.socket?.off("newContactOrMessage", handler);
+    this.socket?.off("notificationWebSocket", handler);
   }
 
   onError(callback: (data: ErrorData) => void): void {
@@ -207,22 +201,22 @@ export class SocketService {
     this.socket?.off("error", callback);
   }
 
-  onContactDeleted(callback: (data: ContactDeletedData) => void): void {
+  onContactDeleted(callback: (data: ContactDeleted) => void): void {
     const handler = ({ ...data }: any) => {
       if (data.type === "contactDeleted") {
         callback(data);
       }
     };
-    this.socket?.on("newContactOrMessage", handler);
+    this.socket?.on("notificationWebSocket", handler);
   }
 
-  offContactDeleted(callback: (data: ContactDeletedData) => void): void {
+  offContactDeleted(callback: (data: ContactDeleted) => void): void {
     const handler = ({ ...data }: any) => {
       if (data.type === "contactDeleted") {
         callback(data);
       }
     };
-    this.socket?.off("newContactOrMessage", handler);
+    this.socket?.off("notificationWebSocket", handler);
   }
 }
 
