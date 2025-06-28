@@ -1,1 +1,71 @@
-# workflows
+# meet-app
+name: meet-app-deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-production:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: [self-hosted, meet-app]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug environment
+        run: |
+          echo "github.ref is ${{ github.ref }}"
+          whoami
+          docker --version
+          make --version
+          ls -la
+      # Сборка Docker-образа для фронтенда
+      - name: Build the client Docker image
+        run: docker build . -t meet-app-client -f ./client/Dockerfile
+        working-directory: ./client
+      # Сборка Docker-образа для бэкенда
+      - name: Build the auth-service Docker image
+        run: docker build . -t meet-app-server -f ./Dockerfile
+        working-directory: ./backend/auth-service
+      # Проверка собранных образов
+      - name: Check images
+        run: docker images | grep -E "meet-app-client|meet-app-server"
+      - name: Execute tests
+        run: exit 0
+
+  remove-container-production:
+    runs-on: [self-hosted, meet-app]
+    needs: build-production
+    steps:
+      - name: Remove old Docker containers
+        run: docker-compose down || true
+
+  start-production:
+    runs-on: [self-hosted, meet-app]
+    needs: remove-container-production
+    steps:
+      - name: Deploy with docker-compose
+        run: |
+          # Создание файла .env с переменными из секретов
+          echo "PORT=${{ secrets.PORT }}" > .env
+          echo "DB_URL=${{ secrets.DB_URL }}" >> .env
+          echo "CLIENT_URL=${{ secrets.CLIENT_URL }}" >> .env
+          echo "ROUTER_API=${{ secrets.ROUTER_API }}" >> .env
+          echo "JWT_ACCESS_SECRET_KEY=${{ secrets.JWT_ACCESS_SECRET_KEY }}" >> .env
+          echo "JWT_REFRESH_SECRET_KEY=${{ secrets.JWT_REFRESH_SECRET_KEY }}" >> .env
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}" >> .env
+          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
+          echo "API_URL=${{ secrets.API_URL }}" >> .env
+          echo "WS_PORT=${{ secrets.WS_PORT }}" >> .env
+          # Запуск контейнеров
+          docker-compose up -d
+
+  clean-old-containers:
+    runs-on: [self-hosted, meet-app]
+    needs: start-production
+    steps:
+      - name: Remove old all Docker containers
+        run: docker system prune -f
