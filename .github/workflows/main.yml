@@ -23,16 +23,16 @@ jobs:
           
       - name: Debug paths
         run: |
-          ls -la ./meet/client/ || echo "Client path not found"
-          ls -la ./meet/backend/auth-service/ || echo "Auth service path not found"
+          ls -la ./client/ || echo "Client path not found"
+          ls -la ./backend/auth-service/ || echo "Auth service path not found"
           
       - name: Build the client Docker image
         run: docker build . -t meet-app-client -f Dockerfile
-        working-directory: ./meet/client
+        working-directory: ./client
         
       - name: Build the auth-service Docker image
         run: docker build . -t meet-app-server -f Dockerfile
-        working-directory: ./meet/backend/auth-service
+        working-directory: ./backend/auth-service
         
       - name: Check images
         run: docker images | grep -E "meet-app-client|meet-app-server"
