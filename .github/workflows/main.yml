@@ -20,6 +20,10 @@ jobs:
           docker --version
           make --version
           ls -la
+      - name: Debug paths
+        run: |
+          ls -la ./meet/client/
+          ls -la ./meet/backend/auth-service/
       # Сборка Docker-образа для фронтенда
       - name: Build the client Docker image
         run: docker build . -t meet-app-client -f Dockerfile
