@@ -14,7 +14,7 @@ export const useFirstLoadingContactStatuses = () => {
 
   const contactIds = useMemo(
     () => contactsData?.map((contact) => contact._id) || [],
-    [contactsData]
+    [contactsData],
   );
 
   const { data: statusesData } = useGetUserStatuses(contactIds);

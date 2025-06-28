@@ -30,7 +30,7 @@ export const useUpdateContactStatuses = ({
       let updatedUserContact: IContact | null = null;
 
       const updatedContacts = oldData.map((contact) => {
-        console.log(contact._id,  targetUserId)
+        console.log(contact._id, targetUserId);
         if (contact._id !== targetUserId) return contact;
 
         const updatedContact = {

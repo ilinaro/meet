@@ -22,7 +22,7 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
   const location = useLocation();
   const authPath = [RouteNames.LOGIN, RouteNames.REGISTRATION];
   const isExcludePath = authPath.includes(location.pathname as RouteNames);
-  
+
   if (isLogin && isExcludePath) {
     return (
       <Navigate to={RouteNames.PROFILE} replace state={{ from: location }} />

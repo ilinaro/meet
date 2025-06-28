@@ -12,7 +12,7 @@ class UserStatusController {
         !userIds.every((id) => typeof id === "string")
       ) {
         throw ApiError.BadRequest("userIds должен быть массивом строк");
-       } 
+      }
 
       const statuses = await UserStatusService.getStatuses(userIds);
       res.json(statuses);

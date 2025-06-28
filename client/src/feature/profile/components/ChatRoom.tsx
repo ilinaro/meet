@@ -34,7 +34,7 @@ export const ChatRoom: React.FC = () => {
   useEffect(() => {
     if (userMain?._id) {
       const handleMessage = (message: Message) => {
-        console.log(message)
+        console.log(message);
         // Фильтруем сообщения по текущей комнате
         if (message.chatId && message.chatId === userContact?.chatId) {
           setMessages((prev) => [...prev, message]);

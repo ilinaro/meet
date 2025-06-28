@@ -24,18 +24,18 @@ export const SearchList: React.FC<Props> = React.memo(
     const setUserContact = useSetUserContact();
     const userContact = useAppSelector(selectUserContact);
 
-    const contactsSet = useMemo(() =>
-      new Set(contactsData?.map(contact => contact._id)),
-      [contactsData]
+    const contactsSet = useMemo(
+      () => new Set(contactsData?.map((contact) => contact._id)),
+      [contactsData],
     );
 
     const choiceUser = (userItem: IContact) => {
       setUserContact({
         ...userItem,
-        isInContacts: contactsSet.has(userItem._id)
+        isInContacts: contactsSet.has(userItem._id),
       });
-    }
-    
+    };
+
     return (
       <div className={styles.searchResults}>
         {isLoading && (
