@@ -22,12 +22,12 @@ jobs:
           ls -la
       # Сборка Docker-образа для фронтенда
       - name: Build the client Docker image
-        run: docker build . -t meet-app-client -f ./client/Dockerfile
-        working-directory: ./client
+        run: docker build . -t meet-app-client -f Dockerfile
+        working-directory: ./meet/client  # Корректировка пути
       # Сборка Docker-образа для бэкенда
       - name: Build the auth-service Docker image
-        run: docker build . -t meet-app-server -f ./Dockerfile
-        working-directory: ./backend/auth-service
+        run: docker build . -t meet-app-server -f Dockerfile
+        working-directory: ./meet/backend/auth-service  # Корректировка пути
       # Проверка собранных образов
       - name: Check images
         run: docker images | grep -E "meet-app-client|meet-app-server"
