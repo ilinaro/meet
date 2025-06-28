@@ -33,7 +33,8 @@ jobs:
       - name: Build the auth-service Docker image
         run: docker build . -t meet-app-server -f Dockerfile
         working-directory: ./meet/backend/auth-service
-            - name: Check images
+        
+      - name: Check images
         run: docker images | grep -E "meet-app-client|meet-app-server"
         
       - name: Execute tests
