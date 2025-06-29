@@ -1,9 +1,8 @@
 # Сборка зависимостей
 FROM node:20-alpine AS deps
 WORKDIR /app
-COPY ./package.json ./package.json
-COPY ./package-lock.json ./package-lock.json
-RUN npm install
+COPY ./package.json ./package-lock.json ./
+RUN npm install --no-optional
 
 # Сборка приложения
 FROM node:20-alpine AS builder
@@ -14,7 +13,7 @@ ARG VITE_API_URL
 ARG VITE_WS_URL
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_WS_URL=$VITE_WS_URL
-RUN npm install -g npm@11.4.2 && npm run build
+RUN npm install && npm run build || { echo "Build failed"; exit 1; }
 # Отладка переменных
 RUN echo "VITE_API_URL=$VITE_API_URL" > /app/env-debug.txt
 RUN echo "VITE_WS_URL=$VITE_WS_URL" >> /app/env-debug.txt
