@@ -25,12 +25,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Debug environment variables
         run: |
-          echo "Checking secrets:"
+          echo "Checking all available environment variables:"
+          env
+          echo "Checking secrets explicitly:"
           echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
           echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
           echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
           echo "API_PORT=${{ secrets.API_PORT }}"
           echo "WS_PORT=${{ secrets.WS_PORT }}"
+          echo "DB_URL=${{ secrets.DB_URL }}"
+          echo "CLIENT_URL=${{ secrets.CLIENT_URL }}"
+          echo "ROUTER_API=${{ secrets.ROUTER_API }}"
+          echo "JWT_ACCESS_SECRET_KEY=${{ secrets.JWT_ACCESS_SECRET_KEY }}"
+          echo "JWT_REFRESH_SECRET_KEY=${{ secrets.JWT_REFRESH_SECRET_KEY }}"
+          echo "SMTP_HOST=${{ secrets.SMTP_HOST }}"
+          echo "SMTP_PORT=${{ secrets.SMTP_PORT }}"
+          echo "SMTP_USER=${{ secrets.SMTP_USER }}"
+          echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}"
+          echo "API_URL=${{ secrets.API_URL }}"
         working-directory: ./client
       - name: Build the client Docker image
         run: |
