@@ -18,34 +18,9 @@ on:
         default: 'both'
 
 jobs:
-  check-commit-message:
-    runs-on: [self-hosted, meet-app]
-    if: ${{ github.event_name != 'workflow_dispatch' }}
-    outputs:
-      build_client: ${{ steps.check.outputs.build_client }}
-      build_auth: ${{ steps.check.outputs.build_auth }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check commit message
-        id: check
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MESSAGE"
-          if [[ "$COMMIT_MESSAGE" =~ "\[client\]" ]]; then
-            echo "build_client=true" >> $GITHUB_OUTPUT
-          else
-            echo "build_client=false" >> $GITHUB_OUTPUT
-          fi
-          if [[ "$COMMIT_MESSAGE" =~ "\[auth\]" ]]; then
-            echo "build_auth=true" >> $GITHUB_OUTPUT
-          else
-            echo "build_auth=false" >> $GITHUB_OUTPUT
-          fi
-
   build-client:
     runs-on: [self-hosted, meet-app]
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && needs.check-commit-message.outputs.build_client == 'true' }}
-    needs: check-commit-message
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'both') || github.event_name == 'push' || github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
       - name: Debug environment variables
@@ -65,8 +40,7 @@ jobs:
 
   build-auth-service:
     runs-on: [self-hosted, meet-app]
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'auth' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && needs.check-commit-message.outputs.build_auth == 'true' }}
-    needs: check-commit-message
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'auth' || inputs.service == 'both') || github.event_name == 'push' || github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
       - name: Build the auth-service Docker image
@@ -78,7 +52,7 @@ jobs:
   remove-container-production:
     runs-on: [self-hosted, meet-app]
     needs: [build-client, build-auth-service]
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'auth' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && (needs.check-commit-message.outputs.build_client == 'true' || needs.check-commit-message.outputs.build_auth == 'true') }}
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'auth' || inputs.service == 'both') || github.event_name == 'push' || github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
       - name: Remove old Docker containers
