@@ -20,6 +20,15 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  if (!token && isLogin === undefined) return <></>;
+  if (!token && isLogin === undefined) return <>
+    <div>
+      isLogin: {isLogin}
+      <br />
+      token: {token}
+      <>
+      import.meta.env.VITE_API_URL: {import.meta.env.VITE_API_URL}
+      </>
+    </div >
+  </>
   return <Routers />;
 };

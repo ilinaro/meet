@@ -5,47 +5,81 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      service:
+        description: 'Service to build (client, auth, or both)'
+        required: true
+        type: choice
+        options:
+          - client
+          - виньети
+          - both
+        default: 'both'
 
 jobs:
-  build-production:
-    if: ${{ github.ref == 'refs/heads/main' }}
+  check-commit-message:
     runs-on: [self-hosted, meet-app]
+    if: ${{ github.event_name != 'workflow_dispatch' }}
+    outputs:
+      build_client: ${{ steps.check.outputs.build_client }}
+      build_auth: ${{ steps.check.outputs.build_auth }}
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Debug environment
+      - name: Check commit message
+        id: check
         run: |
-          echo "github.ref is ${{ github.ref }}"
-          whoami
-          docker --version
-          make --version
-          ls -la
-          
-      - name: Debug paths
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MESSAGE"
+          if [[ "$COMMIT_MESSAGE" =~ "\[client\]" ]]; then
+            echo "build_client=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_client=false" >> $GITHUB_OUTPUT
+          fi
+          if [[ "$COMMIT_MESSAGE" =~ "\[auth\]" ]]; then
+            echo "build_auth=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_auth=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-client:
+    runs-on: [self-hosted, meet-app]
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && needs.check-commit-message.outputs.build_client == 'true' }}
+    needs: check-commit-message
+    steps:
+      - uses: actions/checkout@v4
+      - name: Debug environment variables
         run: |
-          ls -la ./client/ || echo "Client path not found"
-          ls -la ./backend/auth-service/ || echo "Auth service path not found"
-          
-      - name: Build the client Docker image
-        run: docker build . -t meet-app-client -f Dockerfile
+          env | grep -E 'VITE_|CLIENT_PORT|API_PORT'
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
+          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
+          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
+          echo "API_PORT=${{ secrets.API_PORT }}"
         working-directory: ./client
-        
+      - name: Build the client Docker image
+        run: docker build . -t meet-app-client -f Dockerfile --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} --build-arg CLIENT_PORT=${{ secrets.CLIENT_PORT }} --build-arg API_PORT=${{ secrets.API_PORT }}
+        working-directory: ./client
+      - name: Check images
+        run: docker images | grep meet-app-client
+
+  build-auth-service:
+    runs-on: [self-hosted, meet-app]
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'auth' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && needs.check-commit-message.outputs.build_auth == 'true' }}
+    needs: check-commit-message
+    steps:
+      - uses: actions/checkout@v4
       - name: Build the auth-service Docker image
         run: docker build . -t meet-app-server -f Dockerfile
         working-directory: ./backend/auth-service
-        
       - name: Check images
-        run: docker images | grep -E "meet-app-client|meet-app-server"
-        
-      - name: Execute tests
-        run: exit 0
+        run: docker images | grep meet-app-server
 
   remove-container-production:
     runs-on: [self-hosted, meet-app]
-    needs: build-production
+    needs: [build-client, build-auth-service]
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.service == 'client' || inputs.service == 'auth' || inputs.service == 'both') || github.event_name != 'workflow_dispatch' && (needs.check-commit-message.outputs.build_client == 'true' || needs.check-commit-message.outputs.build_auth == 'true') }}
     steps:
       - uses: actions/checkout@v4
-      
       - name: Remove old Docker containers
         run: docker-compose down || true
 
@@ -54,11 +88,12 @@ jobs:
     needs: remove-container-production
     steps:
       - uses: actions/checkout@v4
-      
       - name: Create environment file
         run: |
           cat > .env << 'EOF'
-          PORT=${{ secrets.PORT }}
+          CLIENT_PORT=${{ secrets.CLIENT_PORT }}
+          API_PORT=${{ secrets.API_PORT }}
+          WS_PORT=${{ secrets.WS_PORT }}
           DB_URL=${{ secrets.DB_URL }}
           CLIENT_URL=${{ secrets.CLIENT_URL }}
           ROUTER_API=${{ secrets.ROUTER_API }}
@@ -69,9 +104,9 @@ jobs:
           SMTP_USER=${{ secrets.SMTP_USER }}
           SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}
           API_URL=${{ secrets.API_URL }}
-          WS_PORT=${{ secrets.WS_PORT }}
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
+          VITE_WS_URL=${{ secrets.VITE_WS_URL }}
           EOF
-          
       - name: Deploy with docker-compose
         run: docker-compose up -d
 

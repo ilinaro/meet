@@ -7,8 +7,12 @@ services:
       context: ./client
       dockerfile: ./Dockerfile
     ports:
-      - "3002:80"
+      - "${CLIENT_PORT}:${CLIENT_PORT}"
     restart: always
+    depends_on:
+      - auth-service
+    networks:
+      - app-network
 
   auth-service:
     image: meet-app-server:latest
@@ -16,10 +20,11 @@ services:
       context: ./backend/auth-service
       dockerfile: ./Dockerfile
     ports:
-      - "4001:4001"
-      - "5001:5001"
+      - "${API_PORT}:${API_PORT}"
+      - "${WS_PORT}:${WS_PORT}"
     environment:
-      - PORT=${PORT}
+      - PORT=${API_PORT}
+      - WS_PORT=${WS_PORT}
       - DB_URL=${DB_URL}
       - CLIENT_URL=${CLIENT_URL}
       - ROUTER_API=${ROUTER_API}
@@ -30,5 +35,10 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - API_URL=${API_URL}
-      - WS_PORT=${WS_PORT}
     restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
