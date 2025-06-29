@@ -8,6 +8,8 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
+    environment:
+      - PORT=${CLIENT_PORT}
     restart: always
     depends_on:
       - auth-service

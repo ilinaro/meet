@@ -1,33 +1,51 @@
-# Сборка зависимостей
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY ./package.json ./package-lock.json ./
-RUN npm install --no-optional
+# Build stage
+FROM node:18-alpine as build
 
-# Сборка приложения
-FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source code
 COPY . .
-COPY --from=deps /app/node_modules ./node_modules
+
+# Build arguments (будут переданы из GitHub Actions)
 ARG VITE_API_URL
 ARG VITE_WS_URL
+ARG CLIENT_PORT
+
+# Set environment variables for build
 ENV VITE_API_URL=$VITE_API_URL
 ENV VITE_WS_URL=$VITE_WS_URL
-RUN npm install && npm run build || { echo "Build failed"; exit 1; }
-# Отладка переменных
-RUN echo "VITE_API_URL=$VITE_API_URL" > /app/env-debug.txt
-RUN echo "VITE_WS_URL=$VITE_WS_URL" >> /app/env-debug.txt
 
-# Финальный образ с Nginx
-FROM nginx:alpine AS runner
-ARG CLIENT_PORT
-ARG API_PORT
-ENV CLIENT_PORT=$CLIENT_PORT
-ENV API_PORT=$API_PORT
-COPY ./nginx.conf.template /etc/nginx/conf.d/nginx.conf.template
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY --from=builder /app/env-debug.txt /usr/share/nginx/html/env-debug.txt
-# Подставляем переменные в nginx.conf
-RUN envsubst '${CLIENT_PORT},${API_PORT}' < /etc/nginx/conf.d/nginx.conf.template > /etc/nginx/conf.d/default.conf
-EXPOSE ${CLIENT_PORT}
-CMD ["nginx", "-g", "daemon off;"]
+# Build the application
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+
+# Install envsubst for template substitution
+RUN apk add --no-cache gettext
+
+# Copy built application
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration template
+COPY nginx.template /etc/nginx/templates/default.conf.template
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Set environment variables
+ENV CLIENT_PORT=${CLIENT_PORT:-3009}
+ENV API_PORT=${API_PORT:-4001}
+ENV WS_PORT=${WS_PORT:-5001}
+
+# Expose port
+EXPOSE $CLIENT_PORT
+
+# Start nginx with template substitution
+CMD ["sh", "-c", "envsubst '${CLIENT_PORT} ${API_PORT} ${WS_PORT}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
