@@ -58,6 +58,6 @@ jobs:
           echo "VITE_WS_URL=$VITE_WS_URL"
           echo "CLIENT_PORT=$CLIENT_PORT"
       - name: Debug Docker Compose config
-        run: docker compose config
+        run: docker-compose config
       - name: Start application
         run: docker-compose up -d
