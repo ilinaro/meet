@@ -5,7 +5,7 @@ on:
     branches:
       - main
   workflow_dispatch:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   build-app:
@@ -32,9 +32,10 @@ jobs:
       - name: Debug paths
         run: |
           ls -la ./client/ || echo "Client path not found"
+          cat ./client/.env
       - name: Build the client Docker image
         working-directory: ./client
-        run: docker build -t meet-app-client -f Dockerfile --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} .
+        run: docker build -t meet-app-client -f Dockerfile --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} CLIENT_PORT=${{ secrets.CLIENT_PORT }}.
       - name: Check images
         run: docker images | grep -E "meet-app-client"
 
