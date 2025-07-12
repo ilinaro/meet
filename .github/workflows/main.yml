@@ -13,6 +13,10 @@ jobs:
     runs-on: [self-hosted, meet-app]
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './client/.nvmrc'
       - name: Install dependencies
         working-directory: ./client
         run: npm ci

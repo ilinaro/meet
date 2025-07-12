@@ -9,7 +9,7 @@ services:
         - VITE_WS_URL=${VITE_WS_URL}
         - CLIENT_PORT=${CLIENT_PORT}
     ports:
-      - "${CLIENT_PORT:-3000}:${CLIENT_PORT:-3000}" # По умолчанию 3000
+      - "${CLIENT_PORT:-3000}:${CLIENT_PORT:-3000}"
     environment:
       - VITE_API_URL=${VITE_API_URL}
       - VITE_WS_URL=${VITE_WS_URL}
