@@ -16,6 +16,7 @@ jobs:
       - name: Set environment variables
         run: |
           echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
           echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
           echo "WS_PORT=${{ secrets.WS_PORT }}"
       - name: Create environment file
@@ -23,6 +24,7 @@ jobs:
         run: |
           cat > .env << 'EOF'
           VITE_WS_URL=${{ secrets.VITE_WS_URL }}
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
           CLIENT_PORT=${{ secrets.CLIENT_PORT }}
           WS_PORT=${{ secrets.WS_PORT }}
           EOF
@@ -35,6 +37,8 @@ jobs:
           cat ./client/.env
       - name: Build the client Docker image
         working-directory: ./client
+        run: docker build . -t meet-app-client -f Dockerfile
+      - name: Build Docker image
         run: docker-compose build --no-cache     
       - name: Check images
         run: docker images | grep -E "meet-app-client"
