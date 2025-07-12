@@ -41,7 +41,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Remove old Docker containers
-        run: docker compose down || true
+        run: docker-compose down || true
 
   start-app:
     runs-on: [self-hosted, meet-app]
@@ -60,4 +60,4 @@ jobs:
       - name: Debug Docker Compose config
         run: docker compose config
       - name: Start application
-        run: docker compose up -d
+        run: docker-compose up -d
