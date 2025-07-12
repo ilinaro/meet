@@ -34,8 +34,6 @@ jobs:
       - name: Build the client Docker image
         working-directory: ./client
         run: docker build . -t meet-app-client -f Dockerfile
-      - name: Build Docker Compose
-        run: docker compose build --no-cache
       - name: Check images
         run: docker images | grep -E "meet-app-client"
 
