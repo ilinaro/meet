@@ -1,3 +1,4 @@
+cat > docker-compose.yml << 'EOF'
 version: "3.8"
 
 services:
@@ -6,37 +7,14 @@ services:
     build:
       context: ./client
       dockerfile: ./Dockerfile
+      args:
+        - VITE_WS_URL="${VITE_WS_URL}"
     ports:
       - "${CLIENT_PORT}:${CLIENT_PORT}"
-    environment:
-      - PORT=${CLIENT_PORT}
-    restart: always
-    depends_on:
-      - auth-service
-    networks:
-      - app-network
-
-  auth-service:
-    image: meet-app-server:latest
-    build:
-      context: ./backend/auth-service
-      dockerfile: ./Dockerfile
-    ports:
-      - "${API_PORT}:${API_PORT}"
       - "${WS_PORT}:${WS_PORT}"
     environment:
-      - PORT=${API_PORT}
+      - PORT=${CLIENT_PORT}
       - WS_PORT=${WS_PORT}
-      - DB_URL=${DB_URL}
-      - CLIENT_URL=${CLIENT_URL}
-      - ROUTER_API=${ROUTER_API}
-      - JWT_ACCESS_SECRET_KEY=${JWT_ACCESS_SECRET_KEY}
-      - JWT_REFRESH_SECRET_KEY=${JWT_REFRESH_SECRET_KEY}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - API_URL=${API_URL}
     restart: always
     networks:
       - app-network
@@ -44,3 +22,4 @@ services:
 networks:
   app-network:
     driver: bridge
+EOF
