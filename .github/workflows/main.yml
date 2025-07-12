@@ -11,50 +11,48 @@ jobs:
   build-app:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, meet-app]
-    
-steps:
-  - uses: actions/checkout@v4
-  - name: Set environment variables
-    run: |
-      echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
-      echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
-      echo "WS_PORT=${{ secrets.WS_PORT }}"
-  - name: Create environment file
-    working-directory: ./client
-    run: |
-      cat > .env << 'EOF'
-      VITE_WS_URL=${{ secrets.VITE_WS_URL }}
-      CLIENT_PORT=${{ secrets.CLIENT_PORT }}
-      WS_PORT=${{ secrets.WS_PORT }}
-      EOF
-  - name: Debug environment
-    run: |
-      ls -la
-  - name: Debug paths
-    run: |
-      ls -la ./client/ || echo "Client path not found"
-      cat ./client/.env
-  - name: Build the client Docker image
-    working-directory: ./client
-    run: docker build . -t meet-app-server -f Dockerfile
-  - name: Build Docker image
-    run: docker-compose build --no-cache     
-  - name: Check images
-    run: docker images | grep -E "meet-app-client"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set environment variables
+        run: |
+          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
+          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
+          echo "WS_PORT=${{ secrets.WS_PORT }}"
+      - name: Create environment file
+        working-directory: ./client
+        run: |
+          cat > .env << 'EOF'
+          VITE_WS_URL=${{ secrets.VITE_WS_URL }}
+          CLIENT_PORT=${{ secrets.CLIENT_PORT }}
+          WS_PORT=${{ secrets.WS_PORT }}
+          EOF
+      - name: Debug environment
+        run: |
+          ls -la
+      - name: Debug paths
+        run: |
+          ls -la ./client/ || echo "Client path not found"
+          cat ./client/.env
+      - name: Build the client Docker image
+        working-directory: ./client
+        run: docker build . -t meet-app-server -f Dockerfile
+      - name: Build Docker image
+        run: docker-compose build --no-cache     
+      - name: Check images
+        run: docker images | grep -E "meet-app-client"
 
+  remove-container-app:
+    runs-on: [self-hosted, meet-app]
+    needs: build-app
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove old Docker containers
+        run: docker-compose down || true
 
-remove-container-app:
-  runs-on: [self-hosted, meet-app]
-  needs: build-app
-  steps:
-    - uses: actions/checkout@v4
-    - name: Remove old Docker containers
-      run: docker-compose down || true
-
-start-app:
-  runs-on: [self-hosted, meet-app]
-  needs: remove-container-app
-  steps:
-    - uses: actions/checkout@v4
-    - name: Start application
-      run: docker-compose up -d
+  start-app:
+    runs-on: [self-hosted, meet-app]
+    needs: remove-container-app
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start application
+        run: docker-compose up -d
