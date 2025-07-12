@@ -11,6 +11,10 @@ jobs:
   build-app:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, meet-app]
+    env:
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+      CLIENT_PORT: ${{ secrets.CLIENT_PORT }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -20,20 +24,14 @@ jobs:
       - name: Install dependencies
         working-directory: ./client
         run: npm ci
-      - name: Create environment file
-        working-directory: ./client
-        run: |
-          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}" > .env
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
-          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
       - name: Debug environment
-        working-directory: ./client
         run: |
-          cat .env
-          ls -la
+          echo "VITE_API_URL=$VITE_API_URL"
+          echo "VITE_WS_URL=$VITE_WS_URL"
+          echo "CLIENT_PORT=$CLIENT_PORT"
       - name: Build the client Docker image
         working-directory: ./client
-        run: docker build . -t meet-app-client -f Dockerfile
+        run: docker build . -t meet-app-client -f Dockerfile --build-arg VITE_API_URL=$VITE_API_URL --build-arg VITE_WS_URL=$VITE_WS_URL --build-arg CLIENT_PORT=$CLIENT_PORT
       - name: Check images
         run: docker images | grep -E "meet-app-client"
 
@@ -48,11 +46,18 @@ jobs:
   start-app:
     runs-on: [self-hosted, meet-app]
     needs: remove-container-app
+    env:
+      VITE_API_URL: ${{ secrets.VITE_API_URL }}
+      VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+      CLIENT_PORT: ${{ secrets.CLIENT_PORT }}
     steps:
       - uses: actions/checkout@v4
-      - name: Debug Docker Compose config
+      - name: Debug environment
         run: |
-          cat ./client/.env
-          docker compose --env-file ./client/.env config
+          echo "VITE_API_URL=$VITE_API_URL"
+          echo "VITE_WS_URL=$VITE_WS_URL"
+          echo "CLIENT_PORT=$CLIENT_PORT"
+      - name: Debug Docker Compose config
+        run: docker compose config
       - name: Start application
-        run: docker compose --env-file ./client/.env up -d
+        run: docker compose up -d
