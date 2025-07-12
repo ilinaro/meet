@@ -12,20 +12,18 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: [self-hosted, meet-app]
     steps:
-      - uses: actions/checkout@v4
-      - name: Set environment variables
-        run: |
-          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
-          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
-          echo "WS_PORT=${{ secrets.WS_PORT }}"
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Create environment file
         working-directory: ./client
         run: |
           cat > .env << 'EOF'
+          VITE_API_URL=${{ secrets.VITE_API_URL }}
           VITE_WS_URL=${{ secrets.VITE_WS_URL }}
           CLIENT_PORT=${{ secrets.CLIENT_PORT }}
-          WS_PORT=${{ secrets.WS_PORT }}
           EOF
+
       - name: Debug environment
         run: |
           ls -la
@@ -35,9 +33,42 @@ jobs:
           cat ./client/.env
       - name: Build the client Docker image
         working-directory: ./client
-        run: docker build -t meet-app-client -f Dockerfile --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} CLIENT_PORT=${{ secrets.CLIENT_PORT }}.
-      - name: Check images
-        run: docker images | grep -E "meet-app-client"
+      - name: Stop existing containers
+        run: |
+          docker-compose down || true
+
+      - name: Build Docker image
+        run: |
+          docker-compose build --no-cache
+    # if: ${{ github.ref == 'refs/heads/main' }}
+    # runs-on: [self-hosted, meet-app]
+    # steps:
+    #   - uses: actions/checkout@v4
+    #   - name: Set environment variables
+    #     run: |
+    #       echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
+    #       echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
+    #       echo "WS_PORT=${{ secrets.WS_PORT }}"
+    #   - name: Create environment file
+    #     working-directory: ./client
+    #     run: |
+    #       cat > .env << 'EOF'
+    #       VITE_WS_URL=${{ secrets.VITE_WS_URL }}
+    #       CLIENT_PORT=${{ secrets.CLIENT_PORT }}
+    #       WS_PORT=${{ secrets.WS_PORT }}
+    #       EOF
+    #   - name: Debug environment
+    #     run: |
+    #       ls -la
+    #   - name: Debug paths
+    #     run: |
+    #       ls -la ./client/ || echo "Client path not found"
+    #       cat ./client/.env
+    #   - name: Build the client Docker image
+    #     working-directory: ./client
+    #     run: docker build -t meet-app-client -f Dockerfile --build-arg VITE_WS_URL=${{ secrets.VITE_WS_URL }} CLIENT_PORT=${{ secrets.CLIENT_PORT }}.
+    #   - name: Check images
+    #     run: docker images | grep -E "meet-app-client"
 
   remove-container-app:
     runs-on: [self-hosted, meet-app]
