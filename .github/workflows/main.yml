@@ -13,31 +13,25 @@ jobs:
     runs-on: [self-hosted, meet-app]
     steps:
       - uses: actions/checkout@v4
-      - name: Set environment variables
-        run: |
-          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}"
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
-          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}"
-          echo "WS_PORT=${{ secrets.WS_PORT }}"
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
       - name: Create environment file
         working-directory: ./client
         run: |
-          cat > .env << 'EOF'
-          VITE_WS_URL=${{ secrets.VITE_WS_URL }}
-          VITE_API_URL=${{ secrets.VITE_API_URL }}
-          CLIENT_PORT=${{ secrets.CLIENT_PORT }}
-          WS_PORT=${{ secrets.WS_PORT }}
-          EOF
+          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}" > .env
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" >> .env
+          echo "CLIENT_PORT=${{ secrets.CLIENT_PORT }}" >> .env
       - name: Debug environment
+        working-directory: ./client
         run: |
+          cat .env
           ls -la
-      - name: Debug paths
-        run: |
-          ls -la ./client/ || echo "Client path not found"
-          cat ./client/.env
       - name: Build the client Docker image
         working-directory: ./client
-        run: docker build . -t meet-app-client -f Dockerfile 
+        run: docker build . -t meet-app-client -f Dockerfile
+      - name: Build Docker Compose
+        run: docker compose build --no-cache
       - name: Check images
         run: docker images | grep -E "meet-app-client"
 
@@ -47,12 +41,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Remove old Docker containers
-        run: docker-compose down || true
+        run: docker compose down || true
 
   start-app:
     runs-on: [self-hosted, meet-app]
     needs: remove-container-app
     steps:
       - uses: actions/checkout@v4
+      - name: Debug Docker Compose config
+        run: |
+          cat ./client/.env
+          docker compose --env-file ./client/.env config
       - name: Start application
-        run: docker-compose up -d
+        run: docker compose --env-file ./client/.env up -d
