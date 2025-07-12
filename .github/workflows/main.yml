@@ -21,6 +21,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: './client/.nvmrc'
+      - name: Create .env file for deployment
+        run: |
+          echo "CLIENT_PORT=$CLIENT_PORT" > .env
+          echo "VITE_API_URL=$VITE_API_URL" >> .env
+          echo "VITE_WS_URL=$VITE_WS_URL" >> .env
+          echo "Created .env file:"
+          cat .env
       - name: Install dependencies
         working-directory: ./client
         run: npm ci
@@ -40,6 +47,15 @@ jobs:
     needs: build-app
     steps:
       - uses: actions/checkout@v4
+      - name: Create .env file for deployment
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
+          CLIENT_PORT: ${{ secrets.CLIENT_PORT }}
+        run: |
+          echo "CLIENT_PORT=$CLIENT_PORT" > .env
+          echo "VITE_API_URL=$VITE_API_URL" >> .env
+          echo "VITE_WS_URL=$VITE_WS_URL" >> .env
       - name: Remove old Docker containers
         run: docker-compose down || true
 
@@ -52,6 +68,13 @@ jobs:
       CLIENT_PORT: ${{ secrets.CLIENT_PORT }}
     steps:
       - uses: actions/checkout@v4
+      - name: Create .env file for deployment
+        run: |
+          echo "CLIENT_PORT=$CLIENT_PORT" > .env
+          echo "VITE_API_URL=$VITE_API_URL" >> .env
+          echo "VITE_WS_URL=$VITE_WS_URL" >> .env
+          echo "Final .env file:"
+          cat .env
       - name: Debug environment
         run: |
           echo "VITE_API_URL=$VITE_API_URL"
