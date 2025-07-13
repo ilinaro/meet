@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-server:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, meet-app]
     env:
       PORT: ${{ secrets.SERVER_PORT }}
@@ -24,34 +24,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Debug directory structure
-        run: ls -la ./server/auth-service || echo "Directory server/auth-service not found"
+        run: ls -la ./backend/auth-service || echo "Directory backend/auth-service not found"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.12.1'
       - name: Create .env file for deployment
         run: |
-          mkdir -p ./server/auth-service
-          echo "PORT=$PORT" > ./server/auth-service/.env
-          echo "DB_URL=$DB_URL" >> ./server/auth-service/.env
-          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./server/auth-service/.env
-          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./server/auth-service/.env
-          echo "SMTP_HOST=$SMTP_HOST" >> ./server/auth-service/.env
-          echo "SMTP_PORT=$SMTP_PORT" >> ./server/auth-service/.env
-          echo "SMTP_USER=$SMTP_USER" >> ./server/auth-service/.env
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./server/auth-service/.env
-          echo "API_URL=$API_URL" >> ./server/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./server/auth-service/.env
+          mkdir -p ./backend/auth-service
+          echo "PORT=$PORT" > ./backend/auth-service/.env
+          echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
+          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./backend/auth-service/.env
+          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./backend/auth-service/.env
+          echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
+          echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
+          echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
+          echo "API_URL=$API_URL" >> ./backend/auth-service/.env
+          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "Created .env file:"
-          cat ./server/auth-service/.env
+          cat ./backend/auth-service/.env
       - name: Install dependencies
-        working-directory: ./server/auth-service
+        working-directory: ./backend/auth-service
         run: npm ci
       - name: Build the server
-        working-directory: ./server/auth-service
+        working-directory: ./backend/auth-service
         run: npm run build
       - name: Build the server Docker image
-        working-directory: ./server/auth-service
+        working-directory: ./backend/auth-service
         run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT
       - name: Check images
         run: docker images | grep -E "meet-app-server"
@@ -86,19 +86,19 @@ jobs:
         run: curl --fail http://${CLIENT_URL} || echo "Client health check failed"
       - name: Create .env file for deployment
         run: |
-          mkdir -p ./server/auth-service
-          echo "PORT=$PORT" > ./server/auth-service/.env
-          echo "DB_URL=$DB_URL" >> ./server/auth-service/.env
-          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./server/auth-service/.env
-          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./server/auth-service/.env
-          echo "SMTP_HOST=$SMTP_HOST" >> ./server/auth-service/.env
-          echo "SMTP_PORT=$SMTP_PORT" >> ./server/auth-service/.env
-          echo "SMTP_USER=$SMTP_USER" >> ./server/auth-service/.env
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./server/auth-service/.env
-          echo "API_URL=$API_URL" >> ./server/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./server/auth-service/.env
+          mkdir -p ./backend/auth-service
+          echo "PORT=$PORT" > ./backend/auth-service/.env
+          echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
+          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./backend/auth-service/.env
+          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./backend/auth-service/.env
+          echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
+          echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
+          echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
+          echo "API_URL=$API_URL" >> ./backend/auth-service/.env
+          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "Created .env file:"
-          cat ./server/auth-service/.env
+          cat ./backend/auth-service/.env
       - name: Debug Docker Compose config
         run: docker-compose -f docker-compose-server.yml config
       - name: Start server

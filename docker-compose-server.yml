@@ -2,7 +2,7 @@ services:
   server:
     image: meet-app-server:latest
     build:
-      context: ./server/auth-service
+      context: ./backend/auth-service
       dockerfile: Dockerfile
       args:
         - PORT=${PORT}
