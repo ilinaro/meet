@@ -62,7 +62,9 @@ jobs:
           echo "SERVER_PORT: $SERVER_PORT"
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
-        run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT --build-arg ROUTER_API=$ROUTER_API --build-arg JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY --build-arg JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY --build-arg DB_URL=$DB_URL --build-arg CLIENT_URL=$CLIENT_URL --build-arg SMTP_HOST=$SMTP_HOST --build-arg SMTP_PORT=$SMTP_PORT --build-arg SMTP_USER=$SMTP_USER --build-arg SMTP_PASSWORD=$SMTP_PASSWORD --build-arg API_URL=$API_URL --build-arg SERVER_PORT=$SERVER_PORT
+        run: |
+          echo "Running docker build with context: $(pwd)"
+          docker build . -t meet-app-server -f Dockerfile --build-arg PORT="${PORT}" --build-arg ROUTER_API="${ROUTER_API}" --build-arg JWT_ACCESS_SECRET_KEY="${JWT_ACCESS_SECRET_KEY}" --build-arg JWT_REFRESH_SECRET_KEY="${JWT_REFRESH_SECRET_KEY}" --build-arg DB_URL="${DB_URL}" --build-arg CLIENT_URL="${CLIENT_URL}" --build-arg SMTP_HOST="${SMTP_HOST}" --build-arg SMTP_PORT="${SMTP_PORT}" --build-arg SMTP_USER="${SMTP_USER}" --build-arg SMTP_PASSWORD="${SMTP_PASSWORD}" --build-arg API_URL="${API_URL}" --build-arg SERVER_PORT="${SERVER_PORT}"
       - name: Check images
         run: docker images | grep -E "meet-app-server"
 
