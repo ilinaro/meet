@@ -41,30 +41,12 @@ jobs:
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
           echo "SERVER_PORT=$SERVER_PORT" >> .env
-          echo "Created .env file:"
-          cat .env
       - name: Install dependencies
         working-directory: ./backend/auth-service
         run: npm ci
-      - name: Debug environment
-        run: |
-          echo "PORT: $PORT"
-          echo "ROUTER_API: $ROUTER_API"
-          echo "JWT_ACCESS_SECRET_KEY: $JWT_ACCESS_SECRET_KEY"
-          echo "JWT_REFRESH_SECRET_KEY: $JWT_REFRESH_SECRET_KEY"
-          echo "DB_URL: $DB_URL"
-          echo "CLIENT_URL: $CLIENT_URL"
-          echo "SMTP_HOST: $SMTP_HOST"
-          echo "SMTP_PORT: $SMTP_PORT"
-          echo "SMTP_USER: $SMTP_USER"
-          echo "SMTP_PASSWORD: $SMTP_PASSWORD"
-          echo "API_URL: $API_URL"
-          echo "SERVER_PORT: $SERVER_PORT"
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
-        run: |
-          echo "Running docker build with context: $(pwd)"
-          docker build . -t meet-app-server -f Dockerfile --build-arg PORT="${PORT}" --build-arg ROUTER_API="${ROUTER_API}" --build-arg JWT_ACCESS_SECRET_KEY="${JWT_ACCESS_SECRET_KEY}" --build-arg JWT_REFRESH_SECRET_KEY="${JWT_REFRESH_SECRET_KEY}" --build-arg DB_URL="${DB_URL}" --build-arg CLIENT_URL="${CLIENT_URL}" --build-arg SMTP_HOST="${SMTP_HOST}" --build-arg SMTP_PORT="${SMTP_PORT}" --build-arg SMTP_USER="${SMTP_USER}" --build-arg SMTP_PASSWORD="${SMTP_PASSWORD}" --build-arg API_URL="${API_URL}" --build-arg SERVER_PORT="${SERVER_PORT}"
+        run: docker build . -t meet-app-server -f Dockerfile
       - name: Check images
         run: docker images | grep -E "meet-app-server"
 
@@ -137,23 +119,8 @@ jobs:
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
           echo "SERVER_PORT=$SERVER_PORT" >> .env
-          echo "Final .env file:"
-          cat .env
-      - name: Debug environment
-        run: |
-          echo "PORT: $PORT"
-          echo "ROUTER_API: $ROUTER_API"
-          echo "JWT_ACCESS_SECRET_KEY: $JWT_ACCESS_SECRET_KEY"
-          echo "JWT_REFRESH_SECRET_KEY: $JWT_REFRESH_SECRET_KEY"
-          echo "DB_URL: $DB_URL"
-          echo "CLIENT_URL: $CLIENT_URL"
-          echo "SMTP_HOST: $SMTP_HOST"
-          echo "SMTP_PORT: $SMTP_PORT"
-          echo "SMTP_USER: $SMTP_USER"
-          echo "SMTP_PASSWORD: $SMTP_PASSWORD"
-          echo "API_URL: $API_URL"
-          echo "SERVER_PORT: $SERVER_PORT"
-      - name: Debug Docker Compose config
-        run: docker-compose -f docker-compose-server.yml config
       - name: Start server
-        run: docker-compose -f docker-compose-server.yml up -d
+        run: |
+          docker-compose -f docker-compose-server.yml up -d || { echo "Start failed"; exit 1; }
+      - name: Verify container
+        run: docker ps | grep meet-app-server

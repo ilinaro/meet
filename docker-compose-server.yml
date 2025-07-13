@@ -16,6 +16,7 @@ services:
         - SMTP_USER=${SMTP_USER}
         - SMTP_PASSWORD=${SMTP_PASSWORD}
         - API_URL=${API_URL}
+        - SERVER_PORT=${SERVER_PORT}
     ports:
       - "${SERVER_PORT}:5000"
     environment:
