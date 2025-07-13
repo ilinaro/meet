@@ -5,11 +5,6 @@ on:
     workflows: ["meet-app-deploy"]
     types:
       - completed
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-    branches: ["main"]
 
 jobs:
   build-server:
