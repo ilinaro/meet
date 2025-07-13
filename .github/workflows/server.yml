@@ -5,10 +5,12 @@ on:
     workflows: ["meet-app-deploy"]
     types:
       - completed
+  workflow_dispatch:
+    branches: ["main"]
 
 jobs:
   build-server:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: [self-hosted, meet-app]
     env:
       PORT: ${{ secrets.PORT }}
@@ -25,7 +27,30 @@ jobs:
       SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
-      - name: Debug environment variables
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.12.1'
+      - name: Create .env file for deployment
+        run: |
+          echo "PORT=$PORT" > .env
+          echo "ROUTER_API=$ROUTER_API" >> .env
+          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
+          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
+          echo "DB_URL=$DB_URL" >> .env
+          echo "CLIENT_URL=$CLIENT_URL" >> .env
+          echo "SMTP_HOST=$SMTP_HOST" >> .env
+          echo "SMTP_PORT=$SMTP_PORT" >> .env
+          echo "SMTP_USER=$SMTP_USER" >> .env
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
+          echo "API_URL=$API_URL" >> .env
+          echo "SERVER_PORT=$SERVER_PORT" >> .env
+          echo "Created .env file:"
+          cat .env
+      - name: Install dependencies
+        working-directory: ./backend/auth-service
+        run: npm ci
+      - name: Debug environment
         run: |
           echo "PORT: $PORT"
           echo "ROUTER_API: $ROUTER_API"
@@ -39,35 +64,9 @@ jobs:
           echo "SMTP_PASSWORD: $SMTP_PASSWORD"
           echo "API_URL: $API_URL"
           echo "SERVER_PORT: $SERVER_PORT"
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20.12.1'
-      - name: Create .env file for deployment
-        run: |
-          mkdir -p ./backend/auth-service
-          echo "PORT=$PORT" > ./backend/auth-service/.env
-          echo "ROUTER_API=$ROUTER_API" >> ./backend/auth-service/.env
-          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> ./backend/auth-service/.env
-          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> ./backend/auth-service/.env
-          echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
-          echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
-          echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
-          echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
-          echo "API_URL=$API_URL" >> ./backend/auth-service/.env
-          echo "Created .env file:"
-          cat ./backend/auth-service/.env
-      - name: Install dependencies
-        working-directory: ./backend/auth-service
-        run: npm ci
-      - name: Build the server
-        working-directory: ./backend/auth-service
-        run: npm run build
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
-        run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT --build-arg ROUTER_API=$ROUTER_API --build-arg JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY --build-arg JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY --build-arg DB_URL=$DB_URL --build-arg CLIENT_URL=$CLIENT_URL --build-arg SMTP_HOST=$SMTP_HOST --build-arg SMTP_PORT=$SMTP_PORT --build-arg SMTP_USER=$SMTP_USER --build-arg SMTP_PASSWORD=$SMTP_PASSWORD --build-arg API_URL=$API_URL
+        run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT --build-arg ROUTER_API=$ROUTER_API --build-arg JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY --build-arg JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY --build-arg DB_URL=$DB_URL --build-arg CLIENT_URL=$CLIENT_URL --build-arg SMTP_HOST=$SMTP_HOST --build-arg SMTP_PORT=$SMTP_PORT --build-arg SMTP_USER=$SMTP_USER --build-arg SMTP_PASSWORD=$SMTP_PASSWORD --build-arg API_URL=$API_URL --build-arg SERVER_PORT=$SERVER_PORT
       - name: Check images
         run: docker images | grep -E "meet-app-server"
 
@@ -76,6 +75,33 @@ jobs:
     needs: build-server
     steps:
       - uses: actions/checkout@v4
+      - name: Create .env file for deployment
+        env:
+          PORT: ${{ secrets.PORT }}
+          ROUTER_API: ${{ secrets.ROUTER_API }}
+          JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
+          JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
+          DB_URL: ${{ secrets.DB_URL }}
+          CLIENT_URL: ${{ secrets.CLIENT_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          API_URL: ${{ secrets.API_URL }}
+          SERVER_PORT: ${{ secrets.PORT }}
+        run: |
+          echo "PORT=$PORT" > .env
+          echo "ROUTER_API=$ROUTER_API" >> .env
+          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
+          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
+          echo "DB_URL=$DB_URL" >> .env
+          echo "CLIENT_URL=$CLIENT_URL" >> .env
+          echo "SMTP_HOST=$SMTP_HOST" >> .env
+          echo "SMTP_PORT=$SMTP_PORT" >> .env
+          echo "SMTP_USER=$SMTP_USER" >> .env
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
+          echo "API_URL=$API_URL" >> .env
+          echo "SERVER_PORT=$SERVER_PORT" >> .env
       - name: Remove old Docker containers
         run: docker-compose -f docker-compose-server.yml down || true
       - name: Clean up unused Docker images
@@ -83,7 +109,7 @@ jobs:
 
   start-server:
     runs-on: [self-hosted, meet-app]
-    needs: remove-container-server
+    needs: build-server
     env:
       PORT: ${{ secrets.PORT }}
       ROUTER_API: ${{ secrets.ROUTER_API }}
@@ -99,24 +125,36 @@ jobs:
       SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check Client Health
-        run: curl --fail http://${CLIENT_URL} || echo "Client health check failed"
       - name: Create .env file for deployment
         run: |
-          mkdir -p ./backend/auth-service
-          echo "PORT=$PORT" > ./backend/auth-service/.env
-          echo "ROUTER_API=$ROUTER_API" >> ./backend/auth-service/.env
-          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> ./backend/auth-service/.env
-          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> ./backend/auth-service/.env
-          echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
-          echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
-          echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
-          echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
-          echo "API_URL=$API_URL" >> ./backend/auth-service/.env
-          echo "Created .env file:"
-          cat ./backend/auth-service/.env
+          echo "PORT=$PORT" > .env
+          echo "ROUTER_API=$ROUTER_API" >> .env
+          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
+          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
+          echo "DB_URL=$DB_URL" >> .env
+          echo "CLIENT_URL=$CLIENT_URL" >> .env
+          echo "SMTP_HOST=$SMTP_HOST" >> .env
+          echo "SMTP_PORT=$SMTP_PORT" >> .env
+          echo "SMTP_USER=$SMTP_USER" >> .env
+          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
+          echo "API_URL=$API_URL" >> .env
+          echo "SERVER_PORT=$SERVER_PORT" >> .env
+          echo "Final .env file:"
+          cat .env
+      - name: Debug environment
+        run: |
+          echo "PORT: $PORT"
+          echo "ROUTER_API: $ROUTER_API"
+          echo "JWT_ACCESS_SECRET_KEY: $JWT_ACCESS_SECRET_KEY"
+          echo "JWT_REFRESH_SECRET_KEY: $JWT_REFRESH_SECRET_KEY"
+          echo "DB_URL: $DB_URL"
+          echo "CLIENT_URL: $CLIENT_URL"
+          echo "SMTP_HOST: $SMTP_HOST"
+          echo "SMTP_PORT: $SMTP_PORT"
+          echo "SMTP_USER: $SMTP_USER"
+          echo "SMTP_PASSWORD: $SMTP_PASSWORD"
+          echo "API_URL: $API_URL"
+          echo "SERVER_PORT: $SERVER_PORT"
       - name: Debug Docker Compose config
         run: docker-compose -f docker-compose-server.yml config
       - name: Start server
