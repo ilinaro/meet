@@ -11,22 +11,34 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, meet-app]
     env:
-      PORT: ${{ secrets.SERVER_PORT }}
+      PORT: ${{ secrets.PORT }}
+      ROUTER_API: ${{ secrets.ROUTER_API }}
+      JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
+      JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
       DB_URL: ${{ secrets.DB_URL }}
-      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
-      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      CLIENT_URL: ${{ secrets.CLIENT_URL }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       API_URL: ${{ secrets.API_URL }}
-      CLIENT_URL: ${{ secrets.CLIENT_URL }}
+      SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
-      - name: Debug directory structure
-        run: ls -la ./backend/auth-service || echo "Directory backend/auth-service not found"
       - name: Debug environment variables
-        run: echo "PORT is set to $PORT"
+        run: |
+          echo "PORT: $PORT"
+          echo "ROUTER_API: $ROUTER_API"
+          echo "JWT_ACCESS_SECRET_KEY: $JWT_ACCESS_SECRET_KEY"
+          echo "JWT_REFRESH_SECRET_KEY: $JWT_REFRESH_SECRET_KEY"
+          echo "DB_URL: $DB_URL"
+          echo "CLIENT_URL: $CLIENT_URL"
+          echo "SMTP_HOST: $SMTP_HOST"
+          echo "SMTP_PORT: $SMTP_PORT"
+          echo "SMTP_USER: $SMTP_USER"
+          echo "SMTP_PASSWORD: $SMTP_PASSWORD"
+          echo "API_URL: $API_URL"
+          echo "SERVER_PORT: $SERVER_PORT"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -35,15 +47,16 @@ jobs:
         run: |
           mkdir -p ./backend/auth-service
           echo "PORT=$PORT" > ./backend/auth-service/.env
+          echo "ROUTER_API=$ROUTER_API" >> ./backend/auth-service/.env
+          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> ./backend/auth-service/.env
+          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> ./backend/auth-service/.env
           echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
-          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./backend/auth-service/.env
-          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./backend/auth-service/.env
+          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
           echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
           echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
           echo "API_URL=$API_URL" >> ./backend/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "Created .env file:"
           cat ./backend/auth-service/.env
       - name: Install dependencies
@@ -54,7 +67,7 @@ jobs:
         run: npm run build
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
-        run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT
+        run: docker build . -t meet-app-server -f Dockerfile --build-arg PORT=$PORT --build-arg ROUTER_API=$ROUTER_API --build-arg JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY --build-arg JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY --build-arg DB_URL=$DB_URL --build-arg CLIENT_URL=$CLIENT_URL --build-arg SMTP_HOST=$SMTP_HOST --build-arg SMTP_PORT=$SMTP_PORT --build-arg SMTP_USER=$SMTP_USER --build-arg SMTP_PASSWORD=$SMTP_PASSWORD --build-arg API_URL=$API_URL
       - name: Check images
         run: docker images | grep -E "meet-app-server"
 
@@ -72,16 +85,18 @@ jobs:
     runs-on: [self-hosted, meet-app]
     needs: remove-container-server
     env:
-      PORT: ${{ secrets.SERVER_PORT }}
+      PORT: ${{ secrets.PORT }}
+      ROUTER_API: ${{ secrets.ROUTER_API }}
+      JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
+      JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
       DB_URL: ${{ secrets.DB_URL }}
-      JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
-      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+      CLIENT_URL: ${{ secrets.CLIENT_URL }}
       SMTP_HOST: ${{ secrets.SMTP_HOST }}
       SMTP_PORT: ${{ secrets.SMTP_PORT }}
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       API_URL: ${{ secrets.API_URL }}
-      CLIENT_URL: ${{ secrets.CLIENT_URL }}
+      SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
       - name: Check Client Health
@@ -90,15 +105,16 @@ jobs:
         run: |
           mkdir -p ./backend/auth-service
           echo "PORT=$PORT" > ./backend/auth-service/.env
+          echo "ROUTER_API=$ROUTER_API" >> ./backend/auth-service/.env
+          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> ./backend/auth-service/.env
+          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> ./backend/auth-service/.env
           echo "DB_URL=$DB_URL" >> ./backend/auth-service/.env
-          echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./backend/auth-service/.env
-          echo "JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET" >> ./backend/auth-service/.env
+          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "SMTP_HOST=$SMTP_HOST" >> ./backend/auth-service/.env
           echo "SMTP_PORT=$SMTP_PORT" >> ./backend/auth-service/.env
           echo "SMTP_USER=$SMTP_USER" >> ./backend/auth-service/.env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./backend/auth-service/.env
           echo "API_URL=$API_URL" >> ./backend/auth-service/.env
-          echo "CLIENT_URL=$CLIENT_URL" >> ./backend/auth-service/.env
           echo "Created .env file:"
           cat ./backend/auth-service/.env
       - name: Debug Docker Compose config
