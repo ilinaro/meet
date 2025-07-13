@@ -25,6 +25,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Debug directory structure
         run: ls -la ./backend/auth-service || echo "Directory backend/auth-service not found"
+      - name: Debug environment variables
+        run: echo "PORT is set to $PORT"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:

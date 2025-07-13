@@ -8,6 +8,9 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+ARG PORT
+ENV PORT=$PORT
+
 EXPOSE ${PORT}
 
 CMD ["npm", "run", "start"]

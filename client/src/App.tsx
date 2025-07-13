@@ -20,9 +20,6 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  if (!token && isLogin === undefined)
-    return (
-      <></>
-    );
+  if (!token && isLogin === undefined) return <></>;
   return <Routers />;
 };
