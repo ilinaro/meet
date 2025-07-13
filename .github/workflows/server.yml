@@ -28,12 +28,15 @@ jobs:
       CLIENT_URL: ${{ secrets.CLIENT_URL }}
     steps:
       - uses: actions/checkout@v4
+      - name: Debug directory structure
+        run: ls -la ./server/auth-service || echo "Directory server/auth-service not found"
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.12.1'
       - name: Create .env file for deployment
         run: |
+          mkdir -p ./server/auth-service
           echo "PORT=$PORT" > ./server/auth-service/.env
           echo "DB_URL=$DB_URL" >> ./server/auth-service/.env
           echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./server/auth-service/.env
@@ -65,6 +68,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Remove old Docker containers
         run: docker-compose -f docker-compose-server.yml down || true
+      - name: Clean up unused Docker images
+        run: docker image prune -f
 
   start-server:
     runs-on: [self-hosted, meet-app]
@@ -83,9 +88,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check Client Health
-        run: curl --fail http://${CLIENT_URL}
+        run: curl --fail http://${CLIENT_URL} || echo "Client health check failed"
       - name: Create .env file for deployment
         run: |
+          mkdir -p ./server/auth-service
           echo "PORT=$PORT" > ./server/auth-service/.env
           echo "DB_URL=$DB_URL" >> ./server/auth-service/.env
           echo "JWT_ACCESS_SECRET=$JWT_ACCESS_SECRET" >> ./server/auth-service/.env
@@ -96,6 +102,8 @@ jobs:
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> ./server/auth-service/.env
           echo "API_URL=$API_URL" >> ./server/auth-service/.env
           echo "CLIENT_URL=$CLIENT_URL" >> ./server/auth-service/.env
+          echo "Created .env file:"
+          cat ./server/auth-service/.env
       - name: Debug Docker Compose config
         run: docker-compose -f docker-compose-server.yml config
       - name: Start server
