@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 
 RUN npm ci
+RUN npm install typescript@5.5.3
 
 COPY src/ ./src/
 COPY tsconfig.json ./
@@ -17,10 +18,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm ci --only=production
 
 COPY --from=build /app/dist/ ./dist/
 
-EXPOSE 5000
+EXPOSE ${PORT}
 
 CMD ["node", "dist/index.js"]
