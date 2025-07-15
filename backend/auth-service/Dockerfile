@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm ci
 RUN npm install typescript@5.5.3
 
-COPY src/ ./src/
+COPY . .
 COPY tsconfig.json ./
 
 RUN npm run build
