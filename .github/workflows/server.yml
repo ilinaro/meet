@@ -10,6 +10,7 @@ jobs:
     runs-on: [self-hosted, meet-app]
     env:
       PORT: ${{ secrets.PORT }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
       ROUTER_API: ${{ secrets.ROUTER_API }}
       JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
       JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
@@ -20,16 +21,16 @@ jobs:
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       API_URL: ${{ secrets.API_URL }}
-      SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.12.1'
+          node-version-file: './backend/auth-service/.nvmrc'
       - name: Create .env file for deployment
         run: |
           echo "PORT=$PORT" > .env
+          echo "SERVER_PORT=$SERVER_PORT" >> .env
           echo "ROUTER_API=$ROUTER_API" >> .env
           echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
           echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
@@ -40,58 +41,19 @@ jobs:
           echo "SMTP_USER=$SMTP_USER" >> .env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
-          echo "SERVER_PORT=$SERVER_PORT" >> .env
       - name: Install dependencies
         working-directory: ./backend/auth-service
         run: npm ci
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
         run: docker build . -t meet-app-server -f Dockerfile
-      - name: Check images
-        run: docker images | grep -E "meet-app-server"
-
-  remove-container-server:
-    runs-on: [self-hosted, meet-app]
-    needs: build-server
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create .env file for deployment
-        env:
-          PORT: ${{ secrets.PORT }}
-          ROUTER_API: ${{ secrets.ROUTER_API }}
-          JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
-          JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
-          DB_URL: ${{ secrets.DB_URL }}
-          CLIENT_URL: ${{ secrets.CLIENT_URL }}
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
-          API_URL: ${{ secrets.API_URL }}
-          SERVER_PORT: ${{ secrets.PORT }}
-        run: |
-          echo "PORT=$PORT" > .env
-          echo "ROUTER_API=$ROUTER_API" >> .env
-          echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
-          echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
-          echo "DB_URL=$DB_URL" >> .env
-          echo "CLIENT_URL=$CLIENT_URL" >> .env
-          echo "SMTP_HOST=$SMTP_HOST" >> .env
-          echo "SMTP_PORT=$SMTP_PORT" >> .env
-          echo "SMTP_USER=$SMTP_USER" >> .env
-          echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
-          echo "API_URL=$API_URL" >> .env
-          echo "SERVER_PORT=$SERVER_PORT" >> .env
-      - name: Remove old Docker containers
-        run: docker-compose -f docker-compose-server.yml down || true
-      - name: Clean up unused Docker images
-        run: docker image prune -f
 
   start-server:
     runs-on: [self-hosted, meet-app]
     needs: build-server
     env:
       PORT: ${{ secrets.PORT }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT }}
       ROUTER_API: ${{ secrets.ROUTER_API }}
       JWT_ACCESS_SECRET_KEY: ${{ secrets.JWT_ACCESS_SECRET_KEY }}
       JWT_REFRESH_SECRET_KEY: ${{ secrets.JWT_REFRESH_SECRET_KEY }}
@@ -102,12 +64,12 @@ jobs:
       SMTP_USER: ${{ secrets.SMTP_USER }}
       SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
       API_URL: ${{ secrets.API_URL }}
-      SERVER_PORT: ${{ secrets.PORT }}
     steps:
       - uses: actions/checkout@v4
       - name: Create .env file for deployment
         run: |
           echo "PORT=$PORT" > .env
+          echo "SERVER_PORT=$SERVER_PORT" >> .env
           echo "ROUTER_API=$ROUTER_API" >> .env
           echo "JWT_ACCESS_SECRET_KEY=$JWT_ACCESS_SECRET_KEY" >> .env
           echo "JWT_REFRESH_SECRET_KEY=$JWT_REFRESH_SECRET_KEY" >> .env
@@ -118,9 +80,5 @@ jobs:
           echo "SMTP_USER=$SMTP_USER" >> .env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
-          echo "SERVER_PORT=$SERVER_PORT" >> .env
       - name: Start server
-        run: |
-          docker-compose -f docker-compose-server.yml up -d || { echo "Start failed"; exit 1; }
-      - name: Verify container
-        run: docker ps | grep meet-app-server
+        run: docker-compose -f docker-compose-server.yml up -d || { echo "Start failed"; exit 1; }

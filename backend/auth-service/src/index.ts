@@ -19,7 +19,7 @@ app.use(
     origin: process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  })
+  }),
 );
 app.use("/api", router);
 app.use(errorMiddleware);
@@ -49,7 +49,7 @@ const start = async () => {
   console.log("JWT_ACCESS_SECRET_KEY", JWT_ACCESS_SECRET_KEY);
   console.log("JWT_REFRESH_SECRET_KEY", JWT_REFRESH_SECRET_KEY);
   console.log("SMTP_HOST", SMTP_HOST);
-  console.log("SMTP_PORT", SMTP_PORT); 
+  console.log("SMTP_PORT", SMTP_PORT);
   console.log("SMTP_USER", SMTP_USER);
   console.log("SMTP_PASSWORD", SMTP_PASSWORD);
   console.log("API_URL", API_URL);
@@ -58,7 +58,7 @@ const start = async () => {
   try {
     await mongoose.connect(DB_URL);
     httpServer.listen(PORT, () =>
-      logger.success("Server started on port", PORT)
+      logger.success("Server started on port", PORT),
     );
   } catch (e) {
     mongoose.connection.on("error", (err) => {
