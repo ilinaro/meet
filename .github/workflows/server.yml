@@ -28,6 +28,7 @@ jobs:
         with:
           node-version-file: './backend/auth-service/.nvmrc'
       - name: Create .env file for deployment
+        working-directory: ./backend/auth-service
         run: |
           echo "PORT=$PORT" > .env
           echo "SERVER_PORT=$SERVER_PORT" >> .env
@@ -41,6 +42,8 @@ jobs:
           echo "SMTP_USER=$SMTP_USER" >> .env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
+          echo "Debug: Checking env variables - PORT=$PORT, SERVER_PORT=$SERVER_PORT" >> .env
+          cat .env
       - name: Install dependencies
         working-directory: ./backend/auth-service
         run: npm ci
@@ -67,6 +70,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Create .env file for deployment
+        working-directory: ./backend/auth-service
         run: |
           echo "PORT=$PORT" > .env
           echo "SERVER_PORT=$SERVER_PORT" >> .env
@@ -80,5 +84,9 @@ jobs:
           echo "SMTP_USER=$SMTP_USER" >> .env
           echo "SMTP_PASSWORD=$SMTP_PASSWORD" >> .env
           echo "API_URL=$API_URL" >> .env
+          echo "Debug: Checking env variables - PORT=$PORT, SERVER_PORT=$SERVER_PORT" >> .env
+          cat .env
       - name: Start server
-        run: docker-compose -f docker-compose-server.yml up -d || { echo "Start failed"; exit 1; }
+        run: |
+          cd ~/actions-runner-meet-app/meet-app/meet/meet
+          docker-compose -f docker-compose-server.yml up -d || { echo "Start failed"; exit 1; }

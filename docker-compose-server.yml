@@ -16,5 +16,5 @@ services:
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - API_URL=${API_URL}
     volumes:
-      - ./:/app
+      - ./backend/auth-service:/app
     restart: always
