@@ -11,7 +11,8 @@ COPY tsconfig.json ./
 
 RUN ls -la src/
 
-RUN npm run build || { echo "Build failed, check tsc errors above"; cat /app/tsconfig.json; exit 1; }
+RUN npx tsc --noEmit || { echo "TypeScript check failed"; exit 1; }
+RUN npm run build || { echo "Build failed, check tsc errors above"; ls -la dist/; cat /app/tsconfig.json; exit 1; }
 
 EXPOSE ${PORT}
 
