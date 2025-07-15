@@ -44,7 +44,7 @@ jobs:
           cat .env
       - name: Install dependencies
         working-directory: ./backend/auth-service
-        run: npm ci --only=production
+        run: npm ci
       - name: Build the server Docker image
         working-directory: ./backend/auth-service
         run: docker build . -t meet-app-server -f Dockerfile
