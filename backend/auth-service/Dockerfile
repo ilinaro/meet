@@ -8,7 +8,7 @@ RUN npm ci
 COPY src/ ./src/
 COPY tsconfig.json ./
 
-RUN npm run build || { echo "Build failed, check tsc errors above"; exit 1; }
+RUN npm run build || { echo "Build failed, check tsc errors above"; cat /app/tsconfig.json; exit 1; }
 
 EXPOSE ${PORT}
 
